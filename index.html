@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horror Escape - Survivor Chase</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game">
+        <!-- Top Screen: Horror Chase Display -->
+        <div id="top-screen">
+            <div id="crash-header">
+                <h2>🏃 Escape Run</h2>
+                <div id="stats">
+                    <span>💰 Cash: £<span id="banked-total">10.00</span></span>
+                    <span>🏆 Best Escape: <span id="best-run">0.00</span>m</span>
+                    <button id="mode-toggle-btn" class="btn-mode" title="Switch View Mode">🔄 MAZE</button>
+                    <button id="debug-bonus-btn" class="btn-debug" title="Force Trigger Bonus (Debug)">🐛 DEBUG</button>
+                    <button id="debug-catch-btn" class="btn-debug" title="Toggle Force Caught Mode">👹 CATCH: OFF</button>
+                </div>
+            </div>
+            <div id="crash-display">
+                <canvas id="crashCanvas"></canvas>
+                <div id="crash-overlay">
+                    <div id="multiplier-display">0m</div>
+                    <div id="crash-message"></div>
+                </div>
+                <!-- Exit Choice Overlay -->
+                <div id="exit-choice-overlay" class="hidden">
+                    <div class="exit-choice-panel">
+                        <h3>🚪 MAZE EXIT REACHED!</h3>
+                        <div class="exit-stats">
+                            <div>Current Pot: £<span id="exit-pot">0.00</span></div>
+                            <div>Next Maze: Level <span id="exit-next-level">2</span></div>
+                            <div>Danger: <span id="exit-danger" class="danger-low">LOW</span></div>
+                        </div>
+                        <div class="exit-buttons">
+                            <button id="cashout-choice-btn" class="btn-cashout-big">💰 CASH OUT</button>
+                            <button id="continue-choice-btn" class="btn-continue-big">🔥 GO DEEPER</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Loot Pickup Choice Overlay -->
+                <div id="loot-choice-overlay" class="hidden">
+                    <div class="loot-choice-panel">
+                        <h3 id="loot-choice-title">💰 PRIZE FOUND!</h3>
+                        <div class="loot-choice-stats">
+                            <div id="loot-type-display">🟡 GOLD</div>
+                            <div>Value: £<span id="loot-value">0.00</span></div>
+                            <div>Weight: <span id="loot-weight">0.00</span></div>
+                            <div class="warning">⚠️ Picking up will slow you down!</div>
+                        </div>
+                        <div class="loot-choice-buttons">
+                            <button id="loot-take-btn" class="btn-loot-take">✅ PICK UP</button>
+                            <button id="loot-leave-btn" class="btn-loot-leave">❌ LEAVE IT</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Monster Caught Overlay -->
+                <div id="caught-overlay" class="hidden">
+                    <div class="caught-panel">
+                        <h3>👹 CAUGHT BY MONSTER!</h3>
+                        <div class="caught-stats">
+                            <div>Distance Reached: <span id="caught-distance">0.00</span>m</div>
+                            <div class="warning">💀 Lost all progress this run!</div>
+                        </div>
+                        <div class="leaderboard">
+                            <h4>🏆 TOP WINNERS TODAY</h4>
+                            <div class="leaderboard-entry" id="leader-1">
+                                <span class="player-name">💀 DarkRunner</span>
+                                <span class="prize">£845.00</span>
+                            </div>
+                            <div class="leaderboard-entry" id="leader-2">
+                                <span class="player-name">🔥 SpeedDemon</span>
+                                <span class="prize">£623.00</span>
+                            </div>
+                            <div class="leaderboard-entry" id="leader-3">
+                                <span class="player-name">⚡ LuckyEscape</span>
+                                <span class="prize">£489.00</span>
+                            </div>
+                            <div class="leaderboard-entry highlight" id="leader-4">
+                                <span class="player-name">👑 GoldHunter</span>
+                                <span class="prize">£312.50</span>
+                            </div>
+                            <div class="leaderboard-entry" id="leader-5">
+                                <span class="player-name">🎯 ProRunner</span>
+                                <span class="prize">£244.00</span>
+                            </div>
+                        </div>
+                        <div class="caught-buttons">
+                            <button id="caught-continue-btn" class="btn-continue-big">🔄 TRY AGAIN</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Screen: Loot Collection -->
+        <div id="bottom-screen">
+            <div id="slot-header">
+                <h2>💀 Grab Your Loot</h2>
+                <div class="header-controls">
+                    <div id="bet-info">
+                        Risk: £<span id="bet-amount">1.00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Symbol Analysis Panel -->
+            <div id="symbol-analysis" class="hidden">
+                <div id="symbol-breakdown"></div>
+                <div id="run-prediction">
+                    <span class="label">Max Distance:</span>
+                    <span id="multiplier-potential" class="value">--</span>
+                    <span class="label">Monster Aggression:</span>
+                    <span id="risk-indicator" class="value">--</span>
+                </div>
+            </div>
+
+            <div id="reel-area">
+                <div id="reel-container">
+                    <!-- 5x4 grid will be generated here -->
+                </div>
+                
+                <!-- Meter UI -->
+                <div id="meter-container">
+                    <div id="low-vol-meter" class="meter-bar">
+                        <div class="meter-label">🟢 LOW VOL</div>
+                        <div class="meter-fill-wrapper">
+                            <div id="low-vol-meter-fill" class="meter-fill"></div>
+                        </div>
+                        <div id="low-vol-meter-value" class="meter-value">0</div>
+                    </div>
+                    
+                    <div id="high-vol-meter" class="meter-bar">
+                        <div class="meter-label">🔴 HIGH VOL</div>
+                        <div class="meter-fill-wrapper">
+                            <div id="high-vol-meter-fill" class="meter-fill"></div>
+                        </div>
+                        <div id="high-vol-meter-value" class="meter-value">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Volatility Choice Overlay -->
+            <div id="volatility-choice-overlay" class="hidden">
+                <div class="volatility-choice-panel">
+                    <h3>💥 CRASH SYMBOL! CHOOSE YOUR GAME</h3>
+                    <div class="volatility-stats">
+                        <div class="warning">⚖️ Both meters are equal - YOU choose!</div>
+                    </div>
+                    <div class="volatility-buttons">
+                        <button id="choose-low-vol-btn" class="btn-volatility low">
+                            🟢 LOW VOL<br>
+                            <span class="meter-display"><span id="volatility-choice-low-vol">0</span> pts</span><br>
+                            <span class="volatility-desc">Easier · Smaller Prizes</span>
+                        </button>
+                        <button id="choose-high-vol-btn" class="btn-volatility high">
+                            🔴 HIGH VOL<br>
+                            <span class="meter-display"><span id="volatility-choice-high-vol">0</span> pts</span><br>
+                            <span class="volatility-desc">Harder · Bigger Prizes</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Symbol Legend (Hidden by default) -->
+            <div id="symbol-legend" class="hidden">
+                <div class="legend-header">
+                    <div class="legend-title">🩸 Survivor Items</div>
+                    <button id="legend-close-btn" class="btn-close">✕</button>
+                </div>
+                <div class="legend-items">
+                    <div class="legend-item" data-symbol="adrenaline">
+                        <span class="legend-emoji">�</span>
+                        <span class="legend-name">Adrenaline</span>
+                        <span class="legend-effect">+30% Speed | -10% Aggro</span>
+                    </div>
+                    <div class="legend-item" data-symbol="flashlight">
+                        <span class="legend-emoji">�</span>
+                        <span class="legend-name">Flashlight</span>
+                        <span class="legend-effect">+50% Speed | +10% Aggro</span>
+                    </div>
+                    <div class="legend-item" data-symbol="key">
+                        <span class="legend-emoji">🔑</span>
+                        <span class="legend-name">Key</span>
+                        <span class="legend-effect">+40% Speed | Neutral</span>
+                    </div>
+                    <div class="legend-item" data-symbol="medkit">
+                        <span class="legend-emoji">🩹</span>
+                        <span class="legend-name">Med Kit</span>
+                        <span class="legend-effect">+15% Speed | -15% Aggro</span>
+                    </div>
+                    <div class="legend-item" data-symbol="cash">
+                        <span class="legend-emoji">💰</span>
+                        <span class="legend-name">Cash Bag</span>
+                        <span class="legend-effect">+20% Speed | -5% Aggro</span>
+                    </div>
+                    <div class="legend-item" data-symbol="skull">
+                        <span class="legend-emoji">💀</span>
+                        <span class="legend-name">Cursed Skull</span>
+                        <span class="legend-effect">+10% Speed | -2% Aggro</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="controls">
+                <div id="bet-selector">
+                    <span class="bet-label">SELECT STAKE:</span>
+                    <button class="bet-option" data-bet="0.50">£0.50</button>
+                    <button class="bet-option active" data-bet="1.00">£1</button>
+                    <button class="bet-option" data-bet="2.00">£2</button>
+                </div>
+                <button id="spin-btn" class="btn-primary">🏃 GRAB ITEMS (£1.00)</button>
+                <button id="start-run-btn" class="btn-danger" disabled>🔥 START ESCAPE</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
