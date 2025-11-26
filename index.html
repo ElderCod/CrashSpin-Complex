@@ -24,7 +24,6 @@
                 <div id="stats">
                     <span>💰 Cash: £<span id="banked-total">10.00</span></span>
                     <span>🏆 Best Escape: <span id="best-run">0.00</span>m</span>
-                    <button id="mode-toggle-btn" class="btn-mode" title="Switch View Mode">🔄 MAZE</button>
                     <button id="debug-bonus-btn" class="btn-debug" title="Force Trigger Bonus (Debug)">🐛 DEBUG</button>
                     <button id="debug-catch-btn" class="btn-debug" title="Toggle Force Caught Mode">👹 CATCH: OFF</button>
                 </div>
@@ -47,6 +46,22 @@
                         <div class="exit-buttons">
                             <button id="cashout-choice-btn" class="btn-cashout-big">💰 CASH OUT</button>
                             <button id="continue-choice-btn" class="btn-continue-big">🔥 GO DEEPER</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Side Exit Choice Overlay -->
+                <div id="side-exit-overlay" class="hidden">
+                    <div class="side-exit-panel">
+                        <h3 id="side-exit-title">🚪 EXIT OPPORTUNITY!</h3>
+                        <div class="side-exit-stats">
+                            <div class="exit-timer">Prizes Collected: <span id="side-exit-time">🥉0 🥈0 🥇0</span></div>
+                            <div class="exit-payout">Cash Out: £<span id="side-exit-amount">0.00</span></div>
+                            <div class="exit-multiplier">(<span id="side-exit-percent">0</span> prizes total)</div>
+                            <div class="warning">⚠️ Keep going for more prizes!</div>
+                        </div>
+                        <div class="side-exit-buttons">
+                            <button id="side-exit-take-btn" class="btn-cashout-big">💰 TAKE IT</button>
+                            <button id="side-exit-continue-btn" class="btn-continue-big">🔥 KEEP RUNNING</button>
                         </div>
                     </div>
                 </div>

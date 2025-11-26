@@ -19,8 +19,10 @@ const gameState = {
     pendingParams: null,
     currentMazeLevel: 0,
     mazePot: 0,
-    lowVolMeter: 0,      // Green meter (0-40)
-    highVolMeter: 0,     // Red meter (0-40)
+    collectedPrizes: [],  // Prizes collected during current run (bronze/silver/gold)
+    totalCollected: 0,    // Running total of collected prizes
+    lowVolMeter: 0,       // Green meter (0-40)
+    highVolMeter: 0,      // Red meter (0-40)
     pendingGameMode: null // 'low' or 'high' - which crash game to launch
 };
 
@@ -116,65 +118,75 @@ const PAYLINES = [
 
 // ====== CONFIG ======
 const CONFIG = {
-    topRenderer: 'MAZE', // Start with MAZE for bonus
+    topRenderer: 'LINEAR', // Simple linear crash game
     isCrashGameActive: false, // Track if crash game screen is expanded
     debugForceCaught: false // Debug: Force player to be caught by monster
 };
 
 // ====== DOM ELEMENTS ======
-const elements = {
-    reelContainer: document.getElementById('reel-container'),
-    spinBtn: document.getElementById('spin-btn'),
-    startRunBtn: document.getElementById('start-run-btn'),
-    betOptions: document.querySelectorAll('.bet-option'),
-    // Removed: cashoutBtn and foldBtn - no longer needed
-    legendCloseBtn: document.getElementById('legend-close-btn'),
-    symbolLegend: document.getElementById('symbol-legend'),
-    multiplierDisplay: document.getElementById('multiplier-display'),
-    crashMessage: document.getElementById('crash-message'),
-    bankedTotal: document.getElementById('banked-total'),
-    bestRun: document.getElementById('best-run'),
-    crashCanvas: document.getElementById('crashCanvas'),
-    betAmount: document.getElementById('bet-amount'),
-    symbolAnalysis: document.getElementById('symbol-analysis'),
-    symbolBreakdown: document.getElementById('symbol-breakdown'),
-    multiplierPotential: document.getElementById('multiplier-potential'),
-    riskIndicator: document.getElementById('risk-indicator'),
-    modeToggleBtn: document.getElementById('mode-toggle-btn'),
-    transitionOverlay: document.getElementById('transition-overlay'),
-    exitChoiceOverlay: document.getElementById('exit-choice-overlay'),
-    cashoutChoiceBtn: document.getElementById('cashout-choice-btn'),
-    continueChoiceBtn: document.getElementById('continue-choice-btn'),
-    exitPot: document.getElementById('exit-pot'),
-    exitNextLevel: document.getElementById('exit-next-level'),
-    exitDanger: document.getElementById('exit-danger'),
-    lootChoiceOverlay: document.getElementById('loot-choice-overlay'),
-    lootTakeBtn: document.getElementById('loot-take-btn'),
-    lootLeaveBtn: document.getElementById('loot-leave-btn'),
-    lootTypeDisplay: document.getElementById('loot-type-display'),
-    lootValue: document.getElementById('loot-value'),
-    lootWeight: document.getElementById('loot-weight'),
-    caughtOverlay: document.getElementById('caught-overlay'),
-    caughtContinueBtn: document.getElementById('caught-continue-btn'),
-    caughtDistance: document.getElementById('caught-distance'),
-    debugBonusBtn: document.getElementById('debug-bonus-btn'),
-    debugCatchBtn: document.getElementById('debug-catch-btn'),
-    lowVolMeterFill: document.getElementById('low-vol-meter-fill'),
-    lowVolMeterValue: document.getElementById('low-vol-meter-value'),
-    highVolMeterFill: document.getElementById('high-vol-meter-fill'),
-    highVolMeterValue: document.getElementById('high-vol-meter-value'),
-    volatilityChoice: document.getElementById('volatility-choice-overlay'),
-    chooseLowVolBtn: document.getElementById('choose-low-vol-btn'),
-    chooseHighVolBtn: document.getElementById('choose-high-vol-btn'),
-    volatilityChoiceLowVol: document.getElementById('volatility-choice-low-vol'),
-    volatilityChoiceHighVol: document.getElementById('volatility-choice-high-vol')
-};
+// Will be initialized after DOM is ready
+let elements = {};
 
 // ====== AUDIO CONTEXT (for sound effects) ======
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 // ====== INITIALIZATION ======
 function init() {
+    // Initialize DOM elements after DOM is ready
+    elements = {
+        reelContainer: document.getElementById('reel-container'),
+        spinBtn: document.getElementById('spin-btn'),
+        startRunBtn: document.getElementById('start-run-btn'),
+        betOptions: document.querySelectorAll('.bet-option'),
+        legendCloseBtn: document.getElementById('legend-close-btn'),
+        symbolLegend: document.getElementById('symbol-legend'),
+        multiplierDisplay: document.getElementById('multiplier-display'),
+        crashMessage: document.getElementById('crash-message'),
+        bankedTotal: document.getElementById('banked-total'),
+        bestRun: document.getElementById('best-run'),
+        crashCanvas: document.getElementById('crashCanvas'),
+        betAmount: document.getElementById('bet-amount'),
+        symbolAnalysis: document.getElementById('symbol-analysis'),
+        symbolBreakdown: document.getElementById('symbol-breakdown'),
+        multiplierPotential: document.getElementById('multiplier-potential'),
+        riskIndicator: document.getElementById('risk-indicator'),
+        modeToggleBtn: document.getElementById('mode-toggle-btn'),
+        transitionOverlay: document.getElementById('transition-overlay'),
+        exitChoiceOverlay: document.getElementById('exit-choice-overlay'),
+        cashoutChoiceBtn: document.getElementById('cashout-choice-btn'),
+        continueChoiceBtn: document.getElementById('continue-choice-btn'),
+        exitPot: document.getElementById('exit-pot'),
+        exitNextLevel: document.getElementById('exit-next-level'),
+        exitDanger: document.getElementById('exit-danger'),
+        sideExitOverlay: document.getElementById('side-exit-overlay'),
+        sideExitTakeBtn: document.getElementById('side-exit-take-btn'),
+        sideExitContinueBtn: document.getElementById('side-exit-continue-btn'),
+        sideExitTime: document.getElementById('side-exit-time'),
+        sideExitAmount: document.getElementById('side-exit-amount'),
+        sideExitPercent: document.getElementById('side-exit-percent'),
+        sideExitTitle: document.getElementById('side-exit-title'),
+        lootChoiceOverlay: document.getElementById('loot-choice-overlay'),
+        lootTakeBtn: document.getElementById('loot-take-btn'),
+        lootLeaveBtn: document.getElementById('loot-leave-btn'),
+        lootTypeDisplay: document.getElementById('loot-type-display'),
+        lootValue: document.getElementById('loot-value'),
+        lootWeight: document.getElementById('loot-weight'),
+        caughtOverlay: document.getElementById('caught-overlay'),
+        caughtContinueBtn: document.getElementById('caught-continue-btn'),
+        caughtDistance: document.getElementById('caught-distance'),
+        debugBonusBtn: document.getElementById('debug-bonus-btn'),
+        debugCatchBtn: document.getElementById('debug-catch-btn'),
+        lowVolMeterFill: document.getElementById('low-vol-meter-fill'),
+        lowVolMeterValue: document.getElementById('low-vol-meter-value'),
+        highVolMeterFill: document.getElementById('high-vol-meter-fill'),
+        highVolMeterValue: document.getElementById('high-vol-meter-value'),
+        volatilityChoice: document.getElementById('volatility-choice-overlay'),
+        chooseLowVolBtn: document.getElementById('choose-low-vol-btn'),
+        chooseHighVolBtn: document.getElementById('choose-high-vol-btn'),
+        volatilityChoiceLowVol: document.getElementById('volatility-choice-low-vol'),
+        volatilityChoiceHighVol: document.getElementById('volatility-choice-high-vol')
+    };
+    
     // Store default screen sizes for later reference
     const topScreen = document.getElementById('top-screen');
     const bottomScreen = document.getElementById('bottom-screen');
@@ -226,6 +238,8 @@ function setupEventListeners() {
     elements.legendCloseBtn.addEventListener('click', toggleSymbolLegend);
     elements.cashoutChoiceBtn.addEventListener('click', handleExitCashout);
     elements.continueChoiceBtn.addEventListener('click', handleExitContinue);
+    elements.sideExitTakeBtn.addEventListener('click', handleSideExitTake);
+    elements.sideExitContinueBtn.addEventListener('click', handleSideExitContinue);
     elements.lootTakeBtn.addEventListener('click', handleLootTake);
     elements.lootLeaveBtn.addEventListener('click', handleLootLeave);
     elements.caughtContinueBtn.addEventListener('click', handleCaughtContinue);
@@ -233,10 +247,6 @@ function setupEventListeners() {
     elements.debugCatchBtn.addEventListener('click', toggleDebugCatch);
     elements.chooseLowVolBtn.addEventListener('click', () => handleVolatilityChoice('low'));
     elements.chooseHighVolBtn.addEventListener('click', () => handleVolatilityChoice('high'));
-    
-    if (elements.modeToggleBtn) {
-        elements.modeToggleBtn.addEventListener('click', toggleRenderMode);
-    }
 }
 
 // ====== DEBUG: FORCE TRIGGER BONUS ======
@@ -486,6 +496,128 @@ function handleExitContinue() {
         showMessage(`🏆 GOLD ROOM! 7 Gold Prizes! Pot: £${gameState.mazePot.toFixed(2)} 🏆`, '#FFD700');
     } else {
         showMessage(`Room ${currentRoom}/5 - Maze ${gameState.currentMazeLevel} | Pot: £${gameState.mazePot.toFixed(2)}`, '#ffaa00');
+    }
+}
+
+// ====== SIDE EXIT HANDLERS ======
+function showExitCheckpoint(checkpoint) {
+    // Don't show if overlay is already visible
+    if (!elements.sideExitOverlay.classList.contains('hidden')) {
+        console.log('Overlay already visible, skipping');
+        return;
+    }
+    
+    // CRITICAL: Set pause flag and stop game immediately
+    isExitChoicePending = true;
+    gameState.isRunning = false;
+    pauseStartTime = Date.now(); // Track when pause started
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    
+    console.log('EXIT CHOICE PENDING - Animation should be FROZEN');
+    
+    // Count collected prizes
+    const bronzeCount = gameState.collectedPrizes.filter(p => p.type === 'bronze').length;
+    const silverCount = gameState.collectedPrizes.filter(p => p.type === 'silver').length;
+    const goldCount = gameState.collectedPrizes.filter(p => p.type === 'gold').length;
+    
+    // Update overlay content
+    const titleEl = document.getElementById('side-exit-title');
+    const timeEl = document.getElementById('side-exit-time');
+    const amountEl = document.getElementById('side-exit-amount');
+    const percentEl = document.getElementById('side-exit-percent');
+    
+    if (titleEl) titleEl.textContent = `🚪 ${checkpoint.label}!`;
+    if (timeEl) timeEl.textContent = `🥉${bronzeCount} 🥈${silverCount} 🥇${goldCount}`;
+    if (amountEl) amountEl.textContent = gameState.totalCollected.toFixed(2);
+    if (percentEl) percentEl.textContent = gameState.collectedPrizes.length;
+    
+    // Show overlay
+    elements.sideExitOverlay.classList.remove('hidden');
+    
+    playSound('land', 0.7);
+    
+    console.log(`Showing exit: ${checkpoint.label} at ${gameState.currentMultiplier.toFixed(2)}m, gameState.isRunning:`, gameState.isRunning);
+}
+
+function handleSideExitTake() {
+    console.log('TAKING EXIT - Stopping game completely');
+    
+    // Bank all collected prizes
+    const payout = gameState.totalCollected;
+    gameState.bankedTotal += payout;
+    
+    const bronzeCount = gameState.collectedPrizes.filter(p => p.type === 'bronze').length;
+    const silverCount = gameState.collectedPrizes.filter(p => p.type === 'silver').length;
+    const goldCount = gameState.collectedPrizes.filter(p => p.type === 'gold').length;
+    
+    // Clear pause flag and stop game
+    isExitChoicePending = false;
+    gameState.isRunning = false;
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    
+    elements.sideExitOverlay.classList.add('hidden');
+    
+    // Reset consumed meter
+    if (gameState.pendingParams && gameState.pendingParams.gameMode) {
+        if (gameState.pendingParams.gameMode === 'low') {
+            gameState.lowVolMeter = 0;
+        } else if (gameState.pendingParams.gameMode === 'high') {
+            gameState.highVolMeter = 0;
+        }
+        updateMeterUI();
+    }
+    
+    gameState.currentMazeLevel = 0;
+    gameState.canCashout = false;
+    
+    elements.spinBtn.disabled = false;
+    
+    // Shrink screen
+    shrinkChaseScreen();
+    
+    showMessage(`${checkpoint.label} taken! Cashed out £${payout.toFixed(2)}!`, '#00ff00');
+    playSound('win');
+    
+    updateUI();
+    saveGameData();
+}
+
+function handleSideExitContinue() {
+    console.log('CONTINUING RUN - Resuming animation');
+    
+    // Player continues running
+    elements.sideExitOverlay.classList.add('hidden');
+    
+    showMessage(`Brave choice! Keep running!`, '#ffaa00');
+    playSound('land', 0.5);
+    
+    // Adjust start time to account for pause duration
+    // This prevents the animation from jumping ahead
+    if (pauseStartTime) {
+        const pauseDuration = Date.now() - pauseStartTime;
+        crashRunStartTime += pauseDuration; // Push start time forward by pause duration
+        console.log(`Adjusting for ${pauseDuration}ms pause`);
+        pauseStartTime = null;
+    }
+    
+    // Clear pause flag and resume
+    isExitChoicePending = false;
+    gameState.isRunning = true;
+    
+    console.log('Resuming: isPending:', isExitChoicePending, 'isRunning:', gameState.isRunning, 'frameId:', animationFrameId);
+    
+    // Restart animation if not already running
+    if (linearAnimateFunction && !animationFrameId) {
+        console.log('Calling linearAnimateFunction to restart');
+        linearAnimateFunction();
+    } else {
+        console.log('NOT restarting - frameId exists or no function');
     }
 }
 
@@ -771,12 +903,19 @@ function calculateMazeParams(gameMode) {
     
     gameState.currentMazeLevel = mazeLevel;
     gameState.mazePot = startPot;
+    
+    // Generate crash point for linear mode (distance in meters before caught)
+    // Low vol: 15-30m, High vol: 20-50m (higher risk, higher reward potential)
+    const minCrash = isLowVol ? 15 : 20;
+    const maxCrash = isLowVol ? 30 : 50;
+    const crashPoint = minCrash + Math.random() * (maxCrash - minCrash);
 
-    console.log(`Maze Params: ${gameMode.toUpperCase()} VOL, Meter: ${meterPoints}, Starting Pot: £${startPot.toFixed(2)} (${(startPot/gameState.betAmount).toFixed(2)}x bet), Monster Speed Mod: ${monsterSpeedMod}x`);
+    console.log(`Maze Params: ${gameMode.toUpperCase()} VOL, Meter: ${meterPoints}, Starting Pot: £${startPot.toFixed(2)} (${(startPot/gameState.betAmount).toFixed(2)}x bet), Monster Speed Mod: ${monsterSpeedMod}x, Crash Point: ${crashPoint.toFixed(2)}m`);
 
     return {
         mazeLevel,
         startPot,
+        crashPoint,
         playerSpeed: 1.00,  // Base player speed
         monsterSpeed: monsterSpeedMod,  // Multiplier for monster speed
         lootDensity,
@@ -860,6 +999,9 @@ function displaySymbolAnalysis(result) {
 // ====== CRASH RUN ANIMATION ======
 let animationFrameId = null;
 let crashRunStartTime = null;
+let pauseStartTime = null;
+let linearAnimateFunction = null; // Store reference to animation loop
+let isExitChoicePending = false; // Flag to prevent animation during exit choice
 
 function startLinearRun(params) {
     gameState.isSpinning = false;
@@ -876,16 +1018,112 @@ function startLinearRun(params) {
     elements.crashMessage.textContent = '';
     document.body.classList.add('running');
     document.body.classList.remove('crashed');
+    
+    // EXPAND chase screen for crash game
+    expandChaseScreen();
+    
+    // Ensure canvas is initialized
+    if (!ctx) {
+        initCanvas();
+    }
 
     crashRunStartTime = Date.now();
     const startValue = 0.00; // Start at 0 meters
     const endValue = params.crashPoint + 10; // Go a bit beyond crash point for animation
     const duration = 15000; // 15 seconds - longer, more tense runs
+    
+    // Initialize exit checkpoints and prizes - doors randomly spaced (3-7m apart)
+    gameState.exitCheckpoints = [];
+    gameState.collectedPrizes = [];
+    gameState.totalCollected = 0;
+    let nextDoorDistance = 3 + Math.random() * 4; // Start 3-7m in
+    
+    // Generate prizes between doors (bronze, silver, gold)
+    function generatePrizesBetween(startDist, endDist) {
+        const prizes = [];
+        const distance = endDist - startDist;
+        const numPrizes = Math.floor(distance / 1.5) + Math.floor(Math.random() * 3); // 1-3 prizes per segment
+        
+        for (let i = 0; i < numPrizes; i++) {
+            const prizeDistance = startDist + (distance * (i + 1) / (numPrizes + 1));
+            const rand = Math.random();
+            let prizeType, prizeValue;
+            
+            if (rand < 0.6) { // 60% bronze
+                prizeType = 'bronze';
+                prizeValue = 0.10 + Math.random() * 0.20; // £0.10-£0.30
+            } else if (rand < 0.9) { // 30% silver
+                prizeType = 'silver';
+                prizeValue = 0.30 + Math.random() * 0.50; // £0.30-£0.80
+            } else { // 10% gold
+                prizeType = 'gold';
+                prizeValue = 0.80 + Math.random() * 1.20; // £0.80-£2.00
+            }
+            
+            prizes.push({
+                distance: prizeDistance,
+                type: prizeType,
+                value: prizeValue,
+                collected: false
+            });
+        }
+        return prizes;
+    }
+    
+    // Generate all prizes along the path
+    gameState.allPrizes = [];
+    let lastDoorDistance = 0;
+    
+    // IMPORTANT: Generate doors and prizes BEYOND crash point to hide the end!
+    // Go 50% beyond crash point so player never knows when it ends
+    const generationLimit = params.crashPoint * 1.5;
+    
+    while (nextDoorDistance < generationLimit) {
+        // Generate prizes before this door
+        const prizesSegment = generatePrizesBetween(lastDoorDistance, nextDoorDistance);
+        gameState.allPrizes.push(...prizesSegment);
+        
+        gameState.exitCheckpoints.push({
+            multiplier: nextDoorDistance,
+            triggered: false,
+            label: `EXIT ${Math.floor(nextDoorDistance)}m`,
+            isFake: nextDoorDistance > params.crashPoint // Mark doors beyond crash as fake (unreachable)
+        });
+        
+        lastDoorDistance = nextDoorDistance;
+        nextDoorDistance += 3 + Math.random() * 4; // Random spacing: 3-7 meters
+    }
+    
+    // Generate final segment of prizes beyond last door
+    const finalPrizes = generatePrizesBetween(lastDoorDistance, generationLimit);
+    gameState.allPrizes.push(...finalPrizes);
+    
+    gameState.nextCheckpointIndex = 0;
+    gameState.nextPrizeIndex = 0;
+    
+    console.log(`Generated ${gameState.exitCheckpoints.length} exit doors up to ${generationLimit.toFixed(2)}m (crash at ${params.crashPoint.toFixed(2)}m)`);
 
     playSound('heartbeat', 0.5, true);
+    
+    console.log('Starting linear crash run with crash point:', params.crashPoint);
 
     function animate() {
-        if (!gameState.isRunning) return;
+        // CRITICAL: Check pause flag first - STOP EVERYTHING
+        if (isExitChoicePending) {
+            console.log('EXIT CHOICE PENDING - BLOCKED ANIMATION FRAME');
+            return; // Do NOT request another frame
+        }
+        
+        if (!gameState.isRunning) {
+            // Stop animation completely
+            if (animationFrameId) {
+                console.log('Stopping animation, cancelling frame:', animationFrameId);
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            console.log('Animation stopped, isRunning:', gameState.isRunning);
+            return;
+        }
 
         const elapsed = Date.now() - crashRunStartTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -896,35 +1134,63 @@ function startLinearRun(params) {
 
         elements.multiplierDisplay.textContent = currentMultiplier.toFixed(2) + 'm'; // meters escaped
 
-        // Update threat level classes - only at extreme danger
-        const threatLevel = currentMultiplier / params.crashPoint;
-        document.body.classList.remove('high-threat');
-        if (threatLevel > 0.85) { // Only shake when VERY close to crash
-            document.body.classList.add('high-threat');
-        }
+        // Removed threat level hints - don't give away proximity to crash!
 
+        // Check for prize collection
+        if (gameState.allPrizes && gameState.nextPrizeIndex < gameState.allPrizes.length) {
+            const nextPrize = gameState.allPrizes[gameState.nextPrizeIndex];
+            if (!nextPrize.collected && currentMultiplier >= nextPrize.distance) {
+                nextPrize.collected = true;
+                gameState.collectedPrizes.push(nextPrize);
+                gameState.totalCollected += nextPrize.value;
+                gameState.nextPrizeIndex++;
+                
+                // Show floating prize notification
+                const emoji = nextPrize.type === 'gold' ? '🥇' : nextPrize.type === 'silver' ? '🥈' : '🥉';
+                const color = nextPrize.type === 'gold' ? '#FFD700' : nextPrize.type === 'silver' ? '#C0C0C0' : '#CD7F32';
+                showMessage(`${emoji} +£${nextPrize.value.toFixed(2)}`, color);
+                playSound('land', 0.3);
+            }
+        }
+        
         // Draw on canvas
         drawCrashGraph(progress, currentMultiplier, params.crashPoint);
+        
+        // Check for exit checkpoints - trigger when runner reaches the exact checkpoint position
+        if (gameState.exitCheckpoints && gameState.nextCheckpointIndex < gameState.exitCheckpoints.length) {
+            const nextCheckpoint = gameState.exitCheckpoints[gameState.nextCheckpointIndex];
+            const tolerance = 0.5; // Small tolerance in meters
+            if (!nextCheckpoint.triggered && currentMultiplier >= (nextCheckpoint.multiplier - tolerance)) {
+                console.log(`Triggering exit at ${currentMultiplier.toFixed(2)}m, target: ${nextCheckpoint.multiplier.toFixed(2)}m`);
+                nextCheckpoint.triggered = true;
+                gameState.nextCheckpointIndex++;
+                
+                // Show exit option (this will stop the animation)
+                showExitCheckpoint(nextCheckpoint);
+                return; // Exit immediately - DO NOT request next frame
+            }
+        }
 
         // Check if we've hit crash point
         if (currentMultiplier >= params.crashPoint) {
             crash();
-            return;
+            return; // DO NOT request next frame
         }
-
-        animationFrameId = requestAnimationFrame(animate);
+        
+        // Only request next frame if still running
+        if (gameState.isRunning) {
+            animationFrameId = requestAnimationFrame(animate);
+        }
     }
-
+    
+    // Store reference for resuming
+    linearAnimateFunction = animate;
     animate();
 }
 
-// Route to LINEAR or MAZE based on CONFIG
+// Start the crash run in linear mode
 function startCrashRun(params) {
-    if (CONFIG.topRenderer === 'MAZE') {
-        startMazeRun(params);
-    } else {
-        startLinearRun(params);
-    }
+    startLinearRun(params);
 }
 
 // ====== CANVAS DRAWING ======
@@ -946,6 +1212,12 @@ function initCanvas() {
 
 function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     if (!ctx) return;
+    
+    // CRITICAL: Do not draw if exit choice is pending
+    if (isExitChoicePending) {
+        console.log('BLOCKED DRAW - Exit choice pending');
+        return;
+    }
 
     const canvas = elements.crashCanvas;
     const width = canvas.width;
@@ -966,12 +1238,34 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
         ctx.stroke();
     }
 
-    // Draw progress line (survivor's path)
-    const x = width * progress;
-    const maxMultiplier = crashPoint + 5;
-    const yProgress = height - (height * (currentMultiplier / maxMultiplier));
+    // DYNAMIC VIEWPORT: Create a sliding window that gradually zooms out as player progresses
+    // Zoom out effect: Start narrow, gradually expand to show more of the journey
+    const progressRatio = currentMultiplier / crashPoint; // 0 to 1
+    const zoomOutFactor = 1 + progressRatio * 2; // 1x to 3x zoom out
+    const baseViewRange = 15;
+    const viewportRange = baseViewRange * zoomOutFactor; // Gradually expand view
+    
+    // Show journey behind runner (gradually zoom out to see full path)
+    const behindView = Math.min(currentMultiplier, viewportRange * 0.3); // Show 30% behind
+    const minView = Math.max(0, currentMultiplier - behindView);
+    const maxView = currentMultiplier + viewportRange * 0.7; // Show 70% ahead
+    
+    // Map multiplier values to screen positions using the viewport
+    function multToX(mult) {
+        // Map [minView, maxView] to [0, width]
+        return ((mult - minView) / (maxView - minView)) * width;
+    }
+    
+    function multToY(mult) {
+        // Y position based on current viewport range
+        return height - ((mult - minView) / (maxView - minView)) * height;
+    }
+    
+    // Runner is positioned at the front of the line (at current position)
+    const runnerX = multToX(currentMultiplier);
+    const runnerY = multToY(currentMultiplier);
 
-    // Gradient for the escape path - orange to red
+    // Draw the curve path using the dynamic viewport
     const gradient = ctx.createLinearGradient(0, height, 0, 0);
     gradient.addColorStop(0, '#ff6b6b');
     gradient.addColorStop(1, '#ffaa00');
@@ -980,50 +1274,160 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     ctx.lineWidth = 4;
     ctx.lineCap = 'round';
 
-    // Draw smooth curve
+    // Draw smooth curve within viewport range - only up to runner position
     ctx.beginPath();
-    ctx.moveTo(0, height);
+    let firstPoint = true;
     
-    const curve = [];
-    for (let i = 0; i <= progress; i += 0.01) {
-        const mx = width * i;
-        const mult = currentMultiplier * (i / progress);
-        const my = height - (height * (mult / maxMultiplier));
-        curve.push({ x: mx, y: my });
+    // Sample points from start of view to current position
+    for (let mult = minView; mult <= currentMultiplier; mult += 0.5) {
+        const px = multToX(mult);
+        const py = multToY(mult);
+        
+        if (firstPoint) {
+            ctx.moveTo(px, py);
+            firstPoint = false;
+        } else {
+            ctx.lineTo(px, py);
+        }
+    }
+    
+    // Make sure line connects to runner position
+    ctx.lineTo(runnerX, runnerY);
+    ctx.stroke();
+    
+    // Draw distance traveled overlay (top left)
+    ctx.save();
+    ctx.fillStyle = '#ffaa00';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 3;
+    ctx.font = 'bold 24px Arial';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#ffaa00';
+    
+    const distanceText = `🏃 ${currentMultiplier.toFixed(1)}m`; // Don't show crash point!
+    const textMetrics = ctx.measureText(distanceText);
+    const padding = 15;
+    
+    // Semi-transparent background
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(10, 10, textMetrics.width + padding * 2, 40);
+    
+    // Text with outline
+    ctx.fillStyle = '#ffaa00';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#ffaa00';
+    ctx.strokeText(distanceText, 10 + padding, 38);
+    ctx.fillText(distanceText, 10 + padding, 38);
+    ctx.restore();
+    
+    // Draw prize collection overlay (top right)
+    ctx.save();
+    const bronzeCount = gameState.collectedPrizes.filter(p => p.type === 'bronze').length;
+    const silverCount = gameState.collectedPrizes.filter(p => p.type === 'silver').length;
+    const goldCount = gameState.collectedPrizes.filter(p => p.type === 'gold').length;
+    
+    const prizeText = `🥉${bronzeCount} 🥈${silverCount} 🥇${goldCount} | £${gameState.totalCollected.toFixed(2)}`;
+    const prizeMetrics = ctx.measureText(prizeText);
+    
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(width - prizeMetrics.width - padding * 2 - 10, 10, prizeMetrics.width + padding * 2, 40);
+    
+    ctx.fillStyle = '#FFD700';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 3;
+    ctx.font = 'bold 20px Arial';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#FFD700';
+    ctx.strokeText(prizeText, width - prizeMetrics.width - padding - 10, 38);
+    ctx.fillText(prizeText, width - prizeMetrics.width - padding - 10, 38);
+    ctx.restore();
+    
+    // Draw prizes along the path
+    if (gameState.allPrizes) {
+        for (let i = 0; i < gameState.allPrizes.length; i++) {
+            const prize = gameState.allPrizes[i];
+            
+            // Only draw if prize is within viewport and not yet collected
+            if (prize.distance >= minView && prize.distance <= maxView && !prize.collected) {
+                const prizeX = multToX(prize.distance);
+                const prizeY = multToY(prize.distance);
+                
+                // Floating animation
+                const floatOffset = Math.sin(Date.now() / 500 + i) * 3;
+                
+                // Prize color and emoji
+                let emoji, color, glow;
+                if (prize.type === 'gold') {
+                    emoji = '🥇';
+                    color = '#FFD700';
+                    glow = 20;
+                } else if (prize.type === 'silver') {
+                    emoji = '🥈';
+                    color = '#C0C0C0';
+                    glow = 15;
+                } else {
+                    emoji = '🥉';
+                    color = '#CD7F32';
+                    glow = 10;
+                }
+                
+                ctx.shadowBlur = glow;
+                ctx.shadowColor = color;
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText(emoji, prizeX - 10, prizeY + floatOffset);
+                ctx.shadowBlur = 0;
+            }
+        }
+    }
+    
+    // Draw exit checkpoint markers using viewport coordinates
+    if (gameState.exitCheckpoints) {
+        for (let i = 0; i < gameState.exitCheckpoints.length; i++) {
+            const checkpoint = gameState.exitCheckpoints[i];
+            
+            // Only draw if checkpoint is within viewport range
+            if (checkpoint.multiplier >= minView && checkpoint.multiplier <= maxView) {
+                const checkpointX = multToX(checkpoint.multiplier);
+                const checkpointY = multToY(checkpoint.multiplier);
+                
+                // Pulsing effect
+                const pulse = checkpoint.triggered ? 0.3 : 0.7 + Math.sin(Date.now() / 300) * 0.3;
+                
+                // Color based on checkpoint
+                let color = i === 0 ? '#00aaff' : i === 1 ? '#ffaa00' : '#00ff00';
+                if (checkpoint.triggered) color = '#555';
+                
+                // Draw glowing marker
+                ctx.shadowBlur = checkpoint.triggered ? 0 : 30;
+                ctx.shadowColor = color;
+                ctx.fillStyle = color;
+                ctx.globalAlpha = pulse;
+                ctx.font = 'bold 28px Arial';
+                ctx.fillText('🚪', checkpointX - 14, checkpointY + 10);
+                ctx.globalAlpha = 1.0;
+                ctx.shadowBlur = 0;
+            }
+        }
     }
 
-    curve.forEach((point, index) => {
-        if (index === 0) {
-            ctx.moveTo(point.x, point.y);
-        } else {
-            ctx.lineTo(point.x, point.y);
-        }
-    });
-
-    ctx.stroke();
-
-    // Draw survivor sprite (current position)
+    // Draw survivor sprite at viewport-relative position
     ctx.fillStyle = '#ffaa00';
     ctx.shadowBlur = 20;
     ctx.shadowColor = '#ffaa00';
     ctx.font = 'bold 24px Arial';
-    ctx.fillText('🏃', x - 12, yProgress + 8);
+    ctx.fillText('🏃', runnerX - 12, runnerY + 8);
     ctx.shadowBlur = 0;
 
     // ====== SUBTLE HORROR - Random Light System ======
-    const distanceToCrash = crashPoint - currentMultiplier;
-    const totalDistance = crashPoint;
-    const threatLevel = 1 - (distanceToCrash / totalDistance); // 0 at start, 1 at crash
-    
-    // Random lights appear along the corridor (sometimes reveal, sometimes don't)
-    // Lights spawn more frequently as you progress, but placement is random
-    const lightChance = 0.08 + (threatLevel * 0.12); // 8-20% chance per frame
+    // Keep lighting constant - no frequency changes based on distance!
+    const lightChance = 0.10; // Fixed 10% chance per frame
     
     if (Math.random() < lightChance) {
-        // Random light position - can be ahead OR behind player
-        const lightPosition = Math.random(); // 0-1 random position
-        const lightX = width * lightPosition;
-        const isAhead = lightPosition > (x / width);
+        // Random light position within viewport
+        const lightMult = minView + Math.random() * (maxView - minView);
+        const lightX = multToX(lightMult);
+        const isAhead = lightMult > currentMultiplier;
         
         // Draw light cone
         const lightGradient = ctx.createRadialGradient(lightX, height * 0.3, 0, lightX, height * 0.3, 150);
@@ -1033,57 +1437,31 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
         ctx.fillStyle = lightGradient;
         ctx.fillRect(lightX - 150, 0, 300, height);
         
-        // ONLY if light is BEHIND player AND threat is real, MAYBE show a glimpse
-        if (!isAhead && threatLevel > 0.15) {
-            // The closer to crash, the higher chance of seeing something
-            const revealChance = 0.3 + (threatLevel * 0.6); // 30-90% chance, scales with threat
+        // ONLY if light is BEHIND player, MAYBE show a glimpse (constant chance)
+        if (!isAhead && Math.random() < 0.4) {
+            // Show monster shadow/silhouette in the light - constant visibility
+            const shadowDistance = lightX + (Math.random() * 40 - 20);
+            const shadowY = height * 0.5 + (Math.random() * 60 - 30);
             
-            if (Math.random() < revealChance) {
-                // Show monster shadow/silhouette in the light - more visible
-                const shadowDistance = lightX + (Math.random() * 40 - 20);
-                const shadowY = height * 0.5 + (Math.random() * 60 - 30);
-                
-                // Darker, more visible shape with red tint
-                ctx.fillStyle = `rgba(60, 0, 0, ${0.5 + threatLevel * 0.4})`;
+            ctx.fillStyle = `rgba(60, 0, 0, 0.6)`;
+            ctx.beginPath();
+            ctx.ellipse(shadowDistance, shadowY, 30, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            if (Math.random() < 0.5) {
+                ctx.fillStyle = `rgba(255, 0, 0, 0.8)`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff0000';
                 ctx.beginPath();
-                ctx.ellipse(shadowDistance, shadowY, 30, 40, 0, 0, Math.PI * 2);
+                ctx.arc(shadowDistance - 8, shadowY - 8, 4, 0, Math.PI * 2);
+                ctx.arc(shadowDistance + 8, shadowY - 8, 4, 0, Math.PI * 2);
                 ctx.fill();
-                
-                // Eyes show more often (60% chance instead of 30%)
-                if (Math.random() < 0.6) {
-                    ctx.fillStyle = `rgba(255, 0, 0, ${0.7 + threatLevel * 0.3})`;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = '#ff0000';
-                    ctx.beginPath();
-                    ctx.arc(shadowDistance - 8, shadowY - 8, 4, 0, Math.PI * 2);
-                    ctx.arc(shadowDistance + 8, shadowY - 8, 4, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                }
+                ctx.shadowBlur = 0;
             }
         }
     }
-    
-    // Very subtle background pulse (almost imperceptible until high threat)
-    if (threatLevel > 0.5) {
-        const pulseIntensity = Math.sin(Date.now() / 800) * 0.5 + 0.5;
-        const bgPulse = threatLevel * 0.15 * pulseIntensity;
-        const gradient2 = ctx.createRadialGradient(0, height / 2, 0, 0, height / 2, width);
-        gradient2.addColorStop(0, `rgba(80, 0, 0, ${bgPulse})`);
-        gradient2.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = gradient2;
-        ctx.fillRect(0, 0, width, height);
-    }
-
-    // Draw crash point indicator (safe zone)
-    const crashX = width * 0.95;
-    const crashY = height - (height * (crashPoint / maxMultiplier));
-    ctx.fillStyle = 'rgba(0, 170, 0, 0.2)';
-    ctx.fillRect(crashX - 50, 0, 50, height);
-    ctx.fillStyle = '#00aa00';
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText('🚪 SAFE', crashX - 45, 30);
-    ctx.fillText(`${crashPoint.toFixed(2)}m`, crashX - 45, 50);
+    // Removed background pulse - was giving away proximity to crash!
+    // No safe zone indicator - player should never know where crash point is!
 }
 
 // ====== GAME ACTIONS ======
@@ -1493,30 +1871,6 @@ function playSound(type, volume = 0.5, loop = false) {
     }
 }
 
-// ====== MODE TOGGLE ======
-function toggleRenderMode() {
-    console.log('toggleRenderMode called', CONFIG.topRenderer);
-    
-    if (gameState.isRunning || gameState.isWaitingToStart) {
-        showMessage('Cannot switch mode during run!', '#ff6b6b');
-        return;
-    }
-    
-    CONFIG.topRenderer = CONFIG.topRenderer === 'LINEAR' ? 'MAZE' : 'LINEAR';
-    
-    if (elements.modeToggleBtn) {
-        elements.modeToggleBtn.textContent = '🔄 ' + CONFIG.topRenderer;
-    }
-    
-    showMessage(`Switched to ${CONFIG.topRenderer} mode`, '#00aa00');
-    playSound('land', 0.4);
-    
-    // Clear canvas
-    if (ctx) {
-        ctx.clearRect(0, 0, elements.crashCanvas.width, elements.crashCanvas.height);
-    }
-}
-
 // ====== MAZE SYSTEM ======
 let mazeState = {
     grid: [],
@@ -1544,7 +1898,11 @@ let mazeState = {
     currentRoom: 1,          // Track which room (1-5) player is in
     monsterDistance: 0,      // Distance behind player (0 = caught)
     monsterSpeed: 1.0,       // Monster chase speed multiplier
-    floatingTexts: []        // Array of floating text popups { text, x, y, alpha, age }
+    floatingTexts: [],       // Array of floating text popups { text, x, y, alpha, age }
+    // Side exit system
+    runStartTime: 0,         // When the maze run started
+    sideExits: [],           // Array of exit opportunities { time, multiplier, triggered }
+    nextExitIndex: 0         // Track which exit is next
 };
 
 // Loot types with values and weights
@@ -1693,6 +2051,15 @@ function startMazeRun(params) {
     mazeState.collectedLoot = 0;
     mazeState.totalWeight = 0;
     
+    // Initialize side exit system
+    mazeState.runStartTime = Date.now();
+    mazeState.sideExits = [
+        { time: 10000, multiplier: 0.5, triggered: false, label: 'EARLY EXIT' },   // 10s - 50% pot
+        { time: 20000, multiplier: 0.85, triggered: false, label: 'SAFE EXIT' },   // 20s - 85% pot
+        { time: 35000, multiplier: 1.0, triggered: false, label: 'RISKY EXIT' }    // 35s - 100% pot
+    ];
+    mazeState.nextExitIndex = 0;
+    
     playSound('heartbeat', 0.5, true);
     
     // Generate first maze
@@ -1707,8 +2074,8 @@ function generateNextMaze() {
     // Determine current room (1-5 cycle)
     mazeState.currentRoom = ((gameState.currentMazeLevel - 1) % 5) + 1;
     
-    // Maze size scales with difficulty
-    const baseSize = 10;
+    // Maze size scales with difficulty - MUCH LARGER for exploration
+    const baseSize = 25; // Increased from 10 to 25 for longer exploration
     const sizeMod = Math.floor(gameState.currentMazeLevel / 3); // Bigger mazes at higher levels
     const gridWidth = baseSize + sizeMod;
     const gridHeight = baseSize + sizeMod;
@@ -1842,7 +2209,7 @@ function generateNextMaze() {
     mazeState.sectionDuration = (pathLength / baseSpeed) * 1000 * 2.0; // 2x slower pace
     mazeState.sectionStartTime = Date.now();
 
-    mazeState.sectionDuration = 12000; // Increased from 8000 to 12000ms
+    mazeState.sectionDuration = 50000; // 50 seconds to allow all 3 exits (10s, 20s, 35s) to appear
     
     animateMaze();
 }
@@ -1862,6 +2229,31 @@ function animateMaze() {
         const pos = mazeState.path[mazeState.currentPathIndex];
         mazeState.playerX = pos.x;
         mazeState.playerY = pos.y;
+    }
+    
+    // CHECK FOR SIDE EXIT OPPORTUNITIES - Position-based instead of time-based
+    if (mazeState.sideExits && mazeState.nextExitIndex < mazeState.sideExits.length) {
+        const nextExit = mazeState.sideExits[mazeState.nextExitIndex];
+        if (nextExit && !nextExit.triggered) {
+            // Calculate exit position on path
+            let exitPathIndex;
+            const i = mazeState.nextExitIndex;
+            if (i === 0) {
+                exitPathIndex = Math.floor(mazeState.path.length / 3); // 33% through
+            } else if (i === 1) {
+                exitPathIndex = Math.floor(mazeState.path.length * 2 / 3); // 66% through
+            } else {
+                exitPathIndex = Math.floor(mazeState.path.length * 5 / 6); // 83% through
+            }
+            
+            // Trigger when player reaches or passes the exit position
+            if (mazeState.currentPathIndex >= exitPathIndex) {
+                nextExit.triggered = true;
+                mazeState.nextExitIndex++;
+                showSideExit(nextExit);
+                return; // Pause animation
+            }
+        }
     }
     
     // MONSTER CHASE MECHANICS
@@ -2220,6 +2612,50 @@ function drawMaze() {
         ctx.font = 'bold 24px Arial';
         ctx.fillText(loot.emoji, lootX + 8, lootY + 28);
         ctx.shadowBlur = 0;
+    }
+    
+    // Draw side exit markers on the path
+    if (mazeState.path && mazeState.path.length > 0 && mazeState.sideExits && mazeState.sideExits.length > 0) {
+        for (let i = 0; i < mazeState.sideExits.length; i++) {
+            const exit = mazeState.sideExits[i];
+            // Scatter exits evenly along the path - divide path into thirds
+            // Exit 1 (10s) at 1/3 of path, Exit 2 (20s) at 2/3, Exit 3 (35s) at 5/6
+            let exitPathIndex;
+            if (i === 0) {
+                exitPathIndex = Math.floor(mazeState.path.length / 3); // 33% through
+            } else if (i === 1) {
+                exitPathIndex = Math.floor(mazeState.path.length * 2 / 3); // 66% through
+            } else {
+                exitPathIndex = Math.floor(mazeState.path.length * 5 / 6); // 83% through
+            }
+            
+            if (exitPathIndex < mazeState.path.length) {
+                const exitCell = mazeState.path[exitPathIndex];
+                const exitMarkerX = offsetX + exitCell.x * cellSize;
+                const exitMarkerY = offsetY + exitCell.y * cellSize;
+                
+                // Only draw visible exit markers
+                if (exitMarkerX >= -cellSize && exitMarkerX <= width && exitMarkerY >= -cellSize && exitMarkerY <= height) {
+                    // Pulsing effect if not triggered yet
+                    const pulse = exit.triggered ? 0.3 : 0.5 + Math.sin(Date.now() / 300) * 0.2;
+                    
+                    // Color based on exit type
+                    let exitColor = exit.multiplier === 0.5 ? '#00aaff' : exit.multiplier === 0.85 ? '#ffaa00' : '#00ff00';
+                    if (exit.triggered) exitColor = '#555'; // Gray if already used
+                    
+                    // Draw glowing marker
+                    ctx.fillStyle = `rgba(${hexToRgb(exitColor)}, ${pulse})`;
+                    ctx.fillRect(exitMarkerX, exitMarkerY, cellSize, cellSize);
+                    
+                    ctx.shadowBlur = exit.triggered ? 0 : 20;
+                    ctx.shadowColor = exitColor;
+                    ctx.fillStyle = exit.triggered ? '#888' : exitColor;
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillText('🚪', exitMarkerX + 8, exitMarkerY + 28);
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
     }
     
     // Draw player

@@ -636,8 +636,8 @@ body.crash-active #symbol-analysis {
 #controls {
     margin-top: 10px;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    gap: 12px;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
@@ -664,6 +664,7 @@ body.crash-active #controls {
     padding: 8px 12px;
     border-radius: 8px;
     border: 1px solid rgba(139, 0, 0, 0.3);
+    flex-shrink: 0;
 }
 
 .bet-label {
@@ -1024,6 +1025,95 @@ body.crashed::after {
     background: linear-gradient(135deg, #ff8888 0%, #aa0000 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(255, 0, 0, 0.3);
+}
+
+/* ====== SIDE EXIT OVERLAY ====== */
+#side-exit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1002;
+    backdrop-filter: blur(5px);
+}
+
+#side-exit-overlay.hidden {
+    display: none;
+}
+
+.side-exit-panel {
+    background: linear-gradient(135deg, #1a0a00 0%, #0a0a0a 100%);
+    border: 4px solid #ffaa00;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(255, 170, 0, 0.5);
+    animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { border-color: #ffaa00; box-shadow: 0 0 30px rgba(255, 170, 0, 0.5); }
+    50% { border-color: #ff6b6b; box-shadow: 0 0 40px rgba(255, 107, 107, 0.7); }
+}
+
+.side-exit-panel h3 {
+    font-size: 32px;
+    color: #ffaa00;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(255, 170, 0, 0.8);
+}
+
+.side-exit-stats {
+    margin-bottom: 20px;
+}
+
+.side-exit-stats > div {
+    margin: 12px 0;
+    font-size: 18px;
+}
+
+.exit-timer {
+    color: #aaa;
+    font-size: 16px;
+}
+
+.exit-payout {
+    font-size: 36px;
+    font-weight: bold;
+    color: #00ff00;
+    text-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+    margin: 15px 0;
+}
+
+.exit-multiplier {
+    color: #ffaa00;
+    font-size: 18px;
+}
+
+.side-exit-stats .warning {
+    color: #ff6b6b;
+    font-size: 16px;
+    margin-top: 15px;
+    animation: flash 1.5s ease-in-out infinite;
+}
+
+@keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.side-exit-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
 }
 
 /* ====== LOOT CHOICE OVERLAY ====== */
