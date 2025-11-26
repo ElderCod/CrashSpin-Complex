@@ -1078,9 +1078,9 @@ function startLinearRun(params) {
     gameState.allPrizes = [];
     let lastDoorDistance = 0;
     
-    // IMPORTANT: Generate doors and prizes BEYOND crash point to hide the end!
-    // Go 50% beyond crash point so player never knows when it ends
-    const generationLimit = params.crashPoint * 1.5;
+    // IMPORTANT: Generate doors and prizes WAY BEYOND crash point to hide the end!
+    // Generate to at least 3x the crash point to ensure always content ahead
+    const generationLimit = Math.max(params.crashPoint * 3, 150); // Generate to 3x crash or 150m minimum
     
     while (nextDoorDistance < generationLimit) {
         // Generate prizes before this door
