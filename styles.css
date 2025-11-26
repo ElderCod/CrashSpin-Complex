@@ -39,6 +39,62 @@ body::before {
     overflow: hidden;
 }
 
+/* ====== TRANSITION OVERLAY ====== */
+#transition-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #000000 0%, #1a0000 50%, #000000 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+#transition-overlay.show {
+    opacity: 1;
+}
+
+#transition-overlay.hidden {
+    display: none;
+}
+
+.transition-content {
+    text-align: center;
+    animation: pulse-scale 1s ease-in-out infinite;
+}
+
+.transition-icon {
+    font-size: 120px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 30px rgba(255, 107, 107, 0.8));
+}
+
+.transition-text {
+    font-size: 48px;
+    font-weight: bold;
+    color: #ff6b6b;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+    margin-bottom: 10px;
+}
+
+.transition-subtext {
+    font-size: 24px;
+    color: #ffaa00;
+    letter-spacing: 2px;
+}
+
+@keyframes pulse-scale {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
 /* ====== TOP SCREEN: HORROR CHASE (30% default, 100% when active) ====== */
 #top-screen {
     flex: 0 0 30vh;

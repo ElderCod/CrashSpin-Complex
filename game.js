@@ -141,6 +141,7 @@ const elements = {
     multiplierPotential: document.getElementById('multiplier-potential'),
     riskIndicator: document.getElementById('risk-indicator'),
     modeToggleBtn: document.getElementById('mode-toggle-btn'),
+    transitionOverlay: document.getElementById('transition-overlay'),
     exitChoiceOverlay: document.getElementById('exit-choice-overlay'),
     cashoutChoiceBtn: document.getElementById('cashout-choice-btn'),
     continueChoiceBtn: document.getElementById('continue-choice-btn'),
@@ -349,8 +350,8 @@ async function handleSpin() {
             gameState.isSpinning = false;
             elements.startRunBtn.disabled = false;
             
-            const modeText = result.gameMode === 'low' ? 'LOW VOL' : 'HIGH VOL';
-            showMessage(`💥 CRASH! ${modeText} Maze Ready! START or ABORT?`, '#ffaa00');
+            const modeText = result.gameMode === 'low' ? '🟢 LOW VOL' : '🔴 HIGH VOL';
+            showMessage(`💥 CRASH TRIGGERED! ${modeText} - Click START ESCAPE to begin!`, '#ffaa00');
             playSound('bonus');
         }
     } else {
@@ -409,7 +410,10 @@ function handleStartRun() {
     gameState.isWaitingToStart = false;
     elements.startRunBtn.disabled = true;
     
-    startCrashRun(gameState.pendingParams);
+    // Play transition animation before starting crash game
+    playTransitionAnimation(() => {
+        startCrashRun(gameState.pendingParams);
+    });
 }
 
 // Exit choice handlers (when player reaches maze exit)
@@ -1171,6 +1175,33 @@ function generateFakeLeaderboard() {
 }
 
 // ====== SCREEN SIZING ======
+// ====== TRANSITION ANIMATION ======
+function playTransitionAnimation(callback) {
+    // Show transition overlay
+    elements.transitionOverlay.classList.remove('hidden');
+    
+    // Fade in
+    setTimeout(() => {
+        elements.transitionOverlay.classList.add('show');
+    }, 50);
+    
+    // Play sound
+    playSound('bonus', 0.7);
+    
+    // Wait for transition, then execute callback
+    setTimeout(() => {
+        if (callback) callback();
+        
+        // Fade out transition
+        setTimeout(() => {
+            elements.transitionOverlay.classList.remove('show');
+            setTimeout(() => {
+                elements.transitionOverlay.classList.add('hidden');
+            }, 500);
+        }, 500);
+    }, 2000); // Show transition for 2 seconds
+}
+
 function expandChaseScreen() {
     // Don't expand if already active
     if (CONFIG.isCrashGameActive) {
