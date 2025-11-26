@@ -905,9 +905,10 @@ function calculateMazeParams(gameMode) {
     gameState.mazePot = startPot;
     
     // Generate crash point for linear mode (distance in meters before caught)
-    // Low vol: 15-30m, High vol: 20-50m (higher risk, higher reward potential)
-    const minCrash = isLowVol ? 15 : 20;
-    const maxCrash = isLowVol ? 30 : 50;
+    // Adjusted for 97% RTP - crash points calibrated for fair gameplay
+    // Low vol: 18-28m (avg ~23m), High vol: 22-42m (avg ~32m)
+    const minCrash = isLowVol ? 18 : 22;
+    const maxCrash = isLowVol ? 28 : 42;
     const crashPoint = minCrash + Math.random() * (maxCrash - minCrash);
 
     console.log(`Maze Params: ${gameMode.toUpperCase()} VOL, Meter: ${meterPoints}, Starting Pot: £${startPot.toFixed(2)} (${(startPot/gameState.betAmount).toFixed(2)}x bet), Monster Speed Mod: ${monsterSpeedMod}x, Crash Point: ${crashPoint.toFixed(2)}m`);
@@ -1027,22 +1028,25 @@ function startLinearRun(params) {
         initCanvas();
     }
 
-    crashRunStartTime = Date.now();
+    // DON'T start timer yet - wait for screen expansion to complete!
+    // crashRunStartTime will be set after a delay
     const startValue = 0.00; // Start at 0 meters
     const endValue = params.crashPoint + 10; // Go a bit beyond crash point for animation
-    const duration = 15000; // 15 seconds - longer, more tense runs
+    const duration = 30000; // 30 seconds - slower, more strategic gameplay
     
-    // Initialize exit checkpoints and prizes - doors randomly spaced (3-7m apart)
+    // Initialize exit checkpoints and prizes - doors randomly spaced (5-10m apart)
     gameState.exitCheckpoints = [];
     gameState.collectedPrizes = [];
     gameState.totalCollected = 0;
-    let nextDoorDistance = 3 + Math.random() * 4; // Start 3-7m in
+    
+    // Start first door at 10-15m to give player more breathing room at start
+    let nextDoorDistance = 10 + Math.random() * 5; // Start 10-15m in (gives ~10-15 seconds)
     
     // Generate prizes between doors (bronze, silver, gold)
     function generatePrizesBetween(startDist, endDist) {
         const prizes = [];
         const distance = endDist - startDist;
-        const numPrizes = Math.floor(distance / 1.5) + Math.floor(Math.random() * 3); // 1-3 prizes per segment
+        const numPrizes = Math.floor(distance / 2.5) + Math.floor(Math.random() * 2); // Fewer prizes: ~1-2 per segment
         
         for (let i = 0; i < numPrizes; i++) {
             const prizeDistance = startDist + (distance * (i + 1) / (numPrizes + 1));
@@ -1091,7 +1095,7 @@ function startLinearRun(params) {
         });
         
         lastDoorDistance = nextDoorDistance;
-        nextDoorDistance += 3 + Math.random() * 4; // Random spacing: 3-7 meters
+        nextDoorDistance += 5 + Math.random() * 5; // Random spacing: 5-10 meters
     }
     
     // Generate final segment of prizes beyond last door
@@ -1185,7 +1189,13 @@ function startLinearRun(params) {
     
     // Store reference for resuming
     linearAnimateFunction = animate;
-    animate();
+    
+    // Wait for screen expansion animation to complete before starting timer and animation
+    // This prevents the game from running while transition is still playing
+    setTimeout(() => {
+        crashRunStartTime = Date.now(); // Start timer NOW
+        animate(); // Start animation loop NOW
+    }, 1000); // 1 second delay to ensure everything is visible and ready
 }
 
 // Start the crash run in linear mode
@@ -1238,60 +1248,54 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
         ctx.stroke();
     }
 
-    // DYNAMIC VIEWPORT: Create a sliding window that gradually zooms out as player progresses
-    // Zoom out effect: Start narrow, gradually expand to show more of the journey
-    const progressRatio = currentMultiplier / crashPoint; // 0 to 1
-    const zoomOutFactor = 1 + progressRatio * 2; // 1x to 3x zoom out
-    const baseViewRange = 15;
-    const viewportRange = baseViewRange * zoomOutFactor; // Gradually expand view
+    // FULL JOURNEY VIEW - Always show from 0 to current distance
+    // The bar zooms out as we progress, never scrolls/crops the past
+    // Left = 0m (start), Runner moves left->right showing full journey
     
-    // Show journey behind runner (gradually zoom out to see full path)
-    const behindView = Math.min(currentMultiplier, viewportRange * 0.3); // Show 30% behind
-    const minView = Math.max(0, currentMultiplier - behindView);
-    const maxView = currentMultiplier + viewportRange * 0.7; // Show 70% ahead
+    // Add buffer for beyond current position to hide fake content
+    const maxDistance = Math.max(currentMultiplier + 20, 50); // Show 20m ahead or min 50m
     
-    // Map multiplier values to screen positions using the viewport
-    function multToX(mult) {
-        // Map [minView, maxView] to [0, width]
-        return ((mult - minView) / (maxView - minView)) * width;
+    // Scale: fit entire journey (0 to maxDistance) into canvas width
+    const scale = width / maxDistance;
+    
+    // Map distance to X position (simple scaling from 0)
+    function distToX(dist) {
+        return dist * scale;
     }
     
-    function multToY(mult) {
-        // Y position based on current viewport range
-        return height - ((mult - minView) / (maxView - minView)) * height;
+    // Map distance to Y position (exponential curve for visual interest)
+    function distToY(dist) {
+        const curveProgress = dist / maxDistance;
+        const curveHeight = Math.pow(curveProgress, 0.7); // Exponential curve
+        return height - (curveHeight * height);
     }
     
-    // Runner is positioned at the front of the line (at current position)
-    const runnerX = multToX(currentMultiplier);
-    const runnerY = multToY(currentMultiplier);
+    // Runner position
+    const runnerX = distToX(currentMultiplier);
+    const runnerY = distToY(currentMultiplier);
 
-    // Draw the curve path using the dynamic viewport
+    // Draw the full path from 0 to current position
     const gradient = ctx.createLinearGradient(0, height, 0, 0);
     gradient.addColorStop(0, '#ff6b6b');
+    gradient.addColorStop(1, '#ffaa00');
     gradient.addColorStop(1, '#ffaa00');
 
     ctx.strokeStyle = gradient;
     ctx.lineWidth = 4;
     ctx.lineCap = 'round';
 
-    // Draw smooth curve within viewport range - only up to runner position
+    // Draw the full line from 0 to current position
     ctx.beginPath();
-    let firstPoint = true;
+    ctx.moveTo(0, height); // Start at bottom left (0m)
     
-    // Sample points from start of view to current position
-    for (let mult = minView; mult <= currentMultiplier; mult += 0.5) {
-        const px = multToX(mult);
-        const py = multToY(mult);
-        
-        if (firstPoint) {
-            ctx.moveTo(px, py);
-            firstPoint = false;
-        } else {
-            ctx.lineTo(px, py);
-        }
+    // Sample points along the journey up to current position
+    for (let dist = 0; dist <= currentMultiplier; dist += 0.5) {
+        const px = distToX(dist);
+        const py = distToY(dist);
+        ctx.lineTo(px, py);
     }
     
-    // Make sure line connects to runner position
+    // Ensure line connects to runner
     ctx.lineTo(runnerX, runnerY);
     ctx.stroke();
     
@@ -1343,15 +1347,15 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     ctx.fillText(prizeText, width - prizeMetrics.width - padding - 10, 38);
     ctx.restore();
     
-    // Draw prizes along the path
+    // Draw prizes along the path (only those visible in current scale)
     if (gameState.allPrizes) {
         for (let i = 0; i < gameState.allPrizes.length; i++) {
             const prize = gameState.allPrizes[i];
             
-            // Only draw if prize is within viewport and not yet collected
-            if (prize.distance >= minView && prize.distance <= maxView && !prize.collected) {
-                const prizeX = multToX(prize.distance);
-                const prizeY = multToY(prize.distance);
+            // Only draw if prize is within visible range and not collected
+            if (prize.distance <= maxDistance && !prize.collected) {
+                const prizeX = distToX(prize.distance);
+                const prizeY = distToY(prize.distance);
                 
                 // Floating animation
                 const floatOffset = Math.sin(Date.now() / 500 + i) * 3;
@@ -1381,15 +1385,15 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
         }
     }
     
-    // Draw exit checkpoint markers using viewport coordinates
+    // Draw exit checkpoint markers
     if (gameState.exitCheckpoints) {
         for (let i = 0; i < gameState.exitCheckpoints.length; i++) {
             const checkpoint = gameState.exitCheckpoints[i];
             
-            // Only draw if checkpoint is within viewport range
-            if (checkpoint.multiplier >= minView && checkpoint.multiplier <= maxView) {
-                const checkpointX = multToX(checkpoint.multiplier);
-                const checkpointY = multToY(checkpoint.multiplier);
+            // Only draw if checkpoint is within visible range
+            if (checkpoint.multiplier <= maxDistance) {
+                const checkpointX = distToX(checkpoint.multiplier);
+                const checkpointY = distToY(checkpoint.multiplier);
                 
                 // Pulsing effect
                 const pulse = checkpoint.triggered ? 0.3 : 0.7 + Math.sin(Date.now() / 300) * 0.3;
@@ -1411,7 +1415,7 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
         }
     }
 
-    // Draw survivor sprite at viewport-relative position
+    // Draw survivor sprite at current position
     ctx.fillStyle = '#ffaa00';
     ctx.shadowBlur = 20;
     ctx.shadowColor = '#ffaa00';
@@ -1424,10 +1428,10 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     const lightChance = 0.10; // Fixed 10% chance per frame
     
     if (Math.random() < lightChance) {
-        // Random light position within viewport
-        const lightMult = minView + Math.random() * (maxView - minView);
-        const lightX = multToX(lightMult);
-        const isAhead = lightMult > currentMultiplier;
+        // Random light position along the path
+        const lightDist = Math.random() * maxDistance;
+        const lightX = distToX(lightDist);
+        const isAhead = lightDist > currentMultiplier;
         
         // Draw light cone
         const lightGradient = ctx.createRadialGradient(lightX, height * 0.3, 0, lightX, height * 0.3, 150);
@@ -1566,18 +1570,19 @@ function playTransitionAnimation(callback) {
     // Play sound
     playSound('bonus', 0.7);
     
-    // Wait for transition, then execute callback
+    // Wait for transition to complete
     setTimeout(() => {
-        if (callback) callback();
-        
         // Fade out transition
+        elements.transitionOverlay.classList.remove('show');
         setTimeout(() => {
-            elements.transitionOverlay.classList.remove('show');
+            elements.transitionOverlay.classList.add('hidden');
+            
+            // Wait longer after transition fades out before starting game
             setTimeout(() => {
-                elements.transitionOverlay.classList.add('hidden');
-            }, 500);
+                if (callback) callback();
+            }, 800); // Extra 800ms pause after transition for smoother start
         }, 500);
-    }, 2000); // Show transition for 2 seconds
+    }, 2500); // Show transition for 2.5 seconds (increased from 2s)
 }
 
 function expandChaseScreen() {
