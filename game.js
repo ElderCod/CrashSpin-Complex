@@ -904,12 +904,18 @@ function calculateMazeParams(gameMode) {
     gameState.currentMazeLevel = mazeLevel;
     gameState.mazePot = startPot;
     
-    // Generate crash point for linear mode (distance in meters before caught)
-    // Adjusted for 97% RTP - crash points calibrated for fair gameplay
-    // Low vol: 18-28m (avg ~23m), High vol: 22-42m (avg ~32m)
-    const minCrash = isLowVol ? 18 : 22;
-    const maxCrash = isLowVol ? 28 : 42;
-    const crashPoint = minCrash + Math.random() * (maxCrash - minCrash);
+    // CRASH-STYLE EXPONENTIAL DISTRIBUTION
+    // Most runs crash early, rare runs go very far (like traditional crash games)
+    // Using exponential distribution: -log(random) gives us the crash curve
+    // House edge affects the decay rate
+    const houseEdge = 0.03; // 3% house edge for 97% RTP
+    const volatilityMultiplier = isLowVol ? 0.8 : 1.3; // Low vol = shorter avg, High vol = longer avg
+    
+    // Generate crash point using exponential distribution
+    // Most crashes: 5-20m, Common: 20-50m, Uncommon: 50-100m, Rare: 100-500m, Super rare: 500m+
+    const baseMultiplier = 25 * volatilityMultiplier; // Average crash distance
+    const randomValue = Math.random();
+    const crashPoint = Math.max(5, -Math.log(randomValue) * baseMultiplier * (1 - houseEdge));
 
     console.log(`Maze Params: ${gameMode.toUpperCase()} VOL, Meter: ${meterPoints}, Starting Pot: £${startPot.toFixed(2)} (${(startPot/gameState.betAmount).toFixed(2)}x bet), Monster Speed Mod: ${monsterSpeedMod}x, Crash Point: ${crashPoint.toFixed(2)}m`);
 
@@ -1043,6 +1049,7 @@ function startLinearRun(params) {
     let nextDoorDistance = 10 + Math.random() * 5; // Start 10-15m in (gives ~10-15 seconds)
     
     // Generate prizes between doors (bronze, silver, gold)
+    // DISTANCE-SCALED PRIZES: Further = Bigger rewards (like crash multipliers)
     function generatePrizesBetween(startDist, endDist) {
         const prizes = [];
         const distance = endDist - startDist;
@@ -1050,18 +1057,23 @@ function startLinearRun(params) {
         
         for (let i = 0; i < numPrizes; i++) {
             const prizeDistance = startDist + (distance * (i + 1) / (numPrizes + 1));
+            
+            // Scale prizes based on distance (like crash game multipliers)
+            // 0-20m: Small prizes, 20-50m: Medium, 50-100m: Big, 100m+: Mega
+            const distanceMultiplier = Math.max(1, Math.pow(prizeDistance / 20, 1.2));
+            
             const rand = Math.random();
             let prizeType, prizeValue;
             
             if (rand < 0.6) { // 60% bronze
                 prizeType = 'bronze';
-                prizeValue = 0.10 + Math.random() * 0.20; // £0.10-£0.30
+                prizeValue = (0.10 + Math.random() * 0.20) * distanceMultiplier; // Scales with distance
             } else if (rand < 0.9) { // 30% silver
                 prizeType = 'silver';
-                prizeValue = 0.30 + Math.random() * 0.50; // £0.30-£0.80
+                prizeValue = (0.30 + Math.random() * 0.50) * distanceMultiplier;
             } else { // 10% gold
                 prizeType = 'gold';
-                prizeValue = 0.80 + Math.random() * 1.20; // £0.80-£2.00
+                prizeValue = (0.80 + Math.random() * 1.20) * distanceMultiplier;
             }
             
             prizes.push({
