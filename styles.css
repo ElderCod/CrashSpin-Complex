@@ -11,6 +11,8 @@ body {
     overflow: hidden;
     height: 100vh;
     position: relative;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 /* Horror fog overlay */
@@ -1550,6 +1552,270 @@ body.crash-active #meter-container {
     font-weight: normal;
     opacity: 0.8;
     display: block;
+}
+
+/* ====== MOBILE RESPONSIVE STYLES ====== */
+
+/* Tablet and smaller devices */
+@media (max-width: 768px) {
+    #game {
+        max-width: 100%;
+    }
+
+    /* Make transition overlay text smaller */
+    .transition-icon {
+        font-size: 80px;
+    }
+
+    .transition-text {
+        font-size: 32px;
+        letter-spacing: 2px;
+    }
+
+    .transition-subtext {
+        font-size: 18px;
+    }
+
+    /* Crash header responsive */
+    #crash-header {
+        padding: 8px 10px;
+    }
+
+    #crash-header h2 {
+        font-size: 18px;
+    }
+
+    #stats {
+        font-size: 12px;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* Make controls stack vertically on smaller screens */
+    #controls {
+        flex-direction: column !important;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    /* Touch-friendly button sizing */
+    button {
+        min-height: 48px;
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+
+    #start-btn, #exit-btn, #collect-btn {
+        font-size: 18px;
+        min-height: 54px;
+    }
+
+    .btn-debug {
+        min-height: 44px;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+
+    /* Volatility mode button */
+    .btn-volatility {
+        min-height: 60px;
+        padding: 10px 16px;
+    }
+
+    .btn-volatility .meter-display {
+        font-size: 20px;
+    }
+
+    .btn-volatility .volatility-desc {
+        font-size: 12px;
+    }
+
+    /* Prize info responsive */
+    #prize-info {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    /* Multiplier display */
+    #multiplier-display {
+        font-size: 28px;
+    }
+
+    /* Exit overlay responsive */
+    #side-exit-overlay {
+        padding: 20px;
+    }
+
+    .exit-title {
+        font-size: 24px;
+    }
+
+    .exit-stats {
+        font-size: 18px;
+    }
+
+    .checkpoint-title {
+        font-size: 20px;
+    }
+
+    .prize-summary {
+        font-size: 16px;
+    }
+
+    /* Reel symbols smaller */
+    .reel-symbol {
+        font-size: 32px;
+    }
+
+    /* Result overlay responsive */
+    .result-title {
+        font-size: 32px;
+    }
+
+    .result-stats {
+        font-size: 18px;
+    }
+
+    .result-payout {
+        font-size: 28px;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+    /* Even smaller text for phones */
+    .transition-icon {
+        font-size: 60px;
+    }
+
+    .transition-text {
+        font-size: 24px;
+        letter-spacing: 1px;
+    }
+
+    .transition-subtext {
+        font-size: 14px;
+    }
+
+    #crash-header h2 {
+        font-size: 16px;
+    }
+
+    #stats {
+        font-size: 11px;
+        gap: 6px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px 16px;
+    }
+
+    #start-btn, #exit-btn, #collect-btn {
+        font-size: 16px;
+        min-height: 50px;
+    }
+
+    .btn-debug {
+        font-size: 11px;
+        padding: 6px 10px;
+        min-height: 40px;
+    }
+
+    #multiplier-display {
+        font-size: 24px;
+    }
+
+    #prize-info {
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+
+    .exit-title {
+        font-size: 20px;
+    }
+
+    .exit-stats {
+        font-size: 16px;
+    }
+
+    .checkpoint-title {
+        font-size: 18px;
+    }
+
+    .prize-summary {
+        font-size: 14px;
+    }
+
+    .reel-symbol {
+        font-size: 28px;
+    }
+
+    .result-title {
+        font-size: 28px;
+    }
+
+    .result-stats {
+        font-size: 16px;
+    }
+
+    .result-payout {
+        font-size: 24px;
+    }
+
+    /* Smaller volatility button */
+    .btn-volatility {
+        min-height: 54px;
+        padding: 8px 12px;
+    }
+
+    .btn-volatility .meter-display {
+        font-size: 18px;
+        margin: 3px 0;
+    }
+
+    .btn-volatility .volatility-desc {
+        font-size: 11px;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-height: 600px) and (orientation: landscape) {
+    #top-screen {
+        flex: 0 0 50vh;
+    }
+
+    #top-screen.crash-active {
+        flex: 0 0 70vh;
+    }
+
+    #controls {
+        flex-direction: row !important;
+        gap: 6px;
+        padding: 6px;
+    }
+
+    button {
+        min-height: 40px;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+
+    #crash-header {
+        padding: 6px 8px;
+    }
+
+    .transition-icon {
+        font-size: 50px;
+    }
+
+    .transition-text {
+        font-size: 20px;
+    }
+
+    .transition-subtext {
+        font-size: 12px;
+    }
 }
 
 

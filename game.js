@@ -1209,15 +1209,34 @@ let crashHistory = [];
 
 function initCanvas() {
     const canvas = elements.crashCanvas;
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    const dpr = window.devicePixelRatio || 1;
+    
+    // Set display size (css pixels)
+    const rect = canvas.getBoundingClientRect();
+    
+    // Set actual size in memory (scaled for DPI)
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
     ctx = canvas.getContext('2d');
     
-    // Resize canvas on window resize
-    window.addEventListener('resize', () => {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    });
+    // Scale all drawing operations by the dpr
+    ctx.scale(dpr, dpr);
+    
+    // Resize canvas on window resize or orientation change
+    const resizeCanvas = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        
+        ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+    };
+    
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', resizeCanvas);
 }
 
 function drawCrashGraph(progress, currentMultiplier, crashPoint) {
@@ -1230,8 +1249,9 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     }
 
     const canvas = elements.crashCanvas;
-    const width = canvas.width;
-    const height = canvas.height;
+    const rect = canvas.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
 
     // Dark horror corridor background
     ctx.fillStyle = '#0a0a0a';
@@ -1502,15 +1522,16 @@ function crash() {
 
     // Red flash effect on canvas
     const canvas = elements.crashCanvas;
+    const rect = canvas.getBoundingClientRect();
     ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, rect.width, rect.height);
     
     // Draw monster attack
     ctx.fillStyle = '#ff0000';
     ctx.shadowBlur = 40;
     ctx.shadowColor = '#ff0000';
     ctx.font = 'bold 80px Arial';
-    ctx.fillText('👹', canvas.width / 2 - 40, canvas.height / 2 + 20);
+    ctx.fillText('👹', rect.width / 2 - 40, rect.height / 2 + 20);
     ctx.shadowBlur = 0;
 
     setTimeout(() => {
@@ -1603,8 +1624,14 @@ function expandChaseScreen() {
     // Resize canvas to fit new dimensions after transition
     setTimeout(() => {
         const canvas = elements.crashCanvas;
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        
+        ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
     }, 650);
 }
 
@@ -1629,8 +1656,14 @@ function shrinkChaseScreen() {
     // Resize canvas after transition
     setTimeout(() => {
         const canvas = elements.crashCanvas;
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        
+        ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
     }, 650);
 }
 
@@ -2521,8 +2554,9 @@ function drawMaze() {
     if (!ctx) return;
     
     const canvas = elements.crashCanvas;
-    const width = canvas.width;
-    const height = canvas.height;
+    const rect = canvas.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
     
     // Clear
     ctx.fillStyle = '#0a0a0a';
