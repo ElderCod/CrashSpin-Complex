@@ -6,7 +6,7 @@
 
 // ====== GAME STATE ======
 const gameState = {
-    bankedTotal: 10.00,
+    bankedTotal: 10000.00,
     betAmount: 1.00,
     bestRun: 0.00,
     isSpinning: false,
@@ -1714,7 +1714,7 @@ function loadGameData() {
     const saved = localStorage.getItem('slotCrashGame');
     if (saved) {
         const data = JSON.parse(saved);
-        gameState.bankedTotal = data.bankedTotal || 10.00;
+        gameState.bankedTotal = data.bankedTotal || 10000.00;
         gameState.bestRun = data.bestRun || 0.00;
         gameState.betAmount = data.betAmount || 1.00;
         
