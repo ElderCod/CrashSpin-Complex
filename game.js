@@ -559,9 +559,6 @@ function handleSideExitTake() {
     gameState.hasCashedOut = true;
     gameState.cashedOutAt = gameState.currentMultiplier;
     
-    // Clear pause flag but KEEP game running
-    isExitChoicePending = false;
-    
     elements.sideExitOverlay.classList.add('hidden');
     
     // Reset consumed meter
@@ -588,8 +585,25 @@ function handleSideExitTake() {
     updateUI();
     saveGameData();
     
-    // Resume animation to show crash point
+    // Adjust start time to account for pause duration (same as continue)
+    if (pauseStartTime) {
+        const pauseDuration = Date.now() - pauseStartTime;
+        crashRunStartTime += pauseDuration; // Push start time forward by pause duration
+        console.log(`Adjusting for ${pauseDuration}ms pause after cashout`);
+        pauseStartTime = null;
+    }
+    
+    // Clear pause flag and resume animation
+    isExitChoicePending = false;
+    gameState.isRunning = true;
+    
     console.log('Resuming animation to show crash point...');
+    
+    // Restart animation if not already running
+    if (linearAnimateFunction && !animationFrameId) {
+        console.log('Restarting animation frame');
+        animationFrameId = requestAnimationFrame(linearAnimateFunction);
+    }
 }
 
 function handleSideExitContinue() {
