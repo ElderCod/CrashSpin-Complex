@@ -1283,11 +1283,10 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
         return dist * scale;
     }
     
-    // Map distance to Y position (exponential curve for visual interest)
+    // Map distance to Y position (linear - constant visual speed)
     function distToY(dist) {
-        const curveProgress = dist / maxDistance;
-        const curveHeight = Math.pow(curveProgress, 0.7); // Exponential curve
-        return height - (curveHeight * height);
+        const linearProgress = dist / maxDistance;
+        return height - (linearProgress * height);
     }
     
     // Runner position
