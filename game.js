@@ -23,7 +23,9 @@ const gameState = {
     totalCollected: 0,    // Running total of collected prizes
     lowVolMeter: 0,       // Green meter (0-40)
     highVolMeter: 0,      // Red meter (0-40)
-    pendingGameMode: null // 'low' or 'high' - which crash game to launch
+    pendingGameMode: null, // 'low' or 'high' - which crash game to launch
+    hasCashedOut: false,  // Track if player cashed out early (to show crash point)
+    cashedOutAt: 0        // Distance where player cashed out
 };
 
 // ====== SYMBOL DEFINITIONS (Slot Game) ======
@@ -543,7 +545,7 @@ function showExitCheckpoint(checkpoint) {
 }
 
 function handleSideExitTake() {
-    console.log('TAKING EXIT - Stopping game completely');
+    console.log('TAKING EXIT - Cashing out but continuing to show crash point');
     
     // Bank all collected prizes
     const payout = gameState.totalCollected;
@@ -553,13 +555,12 @@ function handleSideExitTake() {
     const silverCount = gameState.collectedPrizes.filter(p => p.type === 'silver').length;
     const goldCount = gameState.collectedPrizes.filter(p => p.type === 'gold').length;
     
-    // Clear pause flag and stop game
+    // Mark that player cashed out (but keep game running to show crash)
+    gameState.hasCashedOut = true;
+    gameState.cashedOutAt = gameState.currentMultiplier;
+    
+    // Clear pause flag but KEEP game running
     isExitChoicePending = false;
-    gameState.isRunning = false;
-    if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-    }
     
     elements.sideExitOverlay.classList.add('hidden');
     
@@ -578,14 +579,17 @@ function handleSideExitTake() {
     
     elements.spinBtn.disabled = false;
     
-    // Shrink screen
-    shrinkChaseScreen();
+    // Don't shrink screen yet - let it play to crash
+    // shrinkChaseScreen(); // REMOVED - wait for crash
     
-    showMessage(`${checkpoint.label} taken! Cashed out £${payout.toFixed(2)}!`, '#00ff00');
+    showMessage(`Cashed out £${payout.toFixed(2)} at ${gameState.cashedOutAt.toFixed(2)}m!`, '#00ff00');
     playSound('win');
     
     updateUI();
     saveGameData();
+    
+    // Resume animation to show crash point
+    console.log('Resuming animation to show crash point...');
 }
 
 function handleSideExitContinue() {
@@ -1017,6 +1021,10 @@ function startLinearRun(params) {
     gameState.currentMultiplier = 1.00;
     gameState.crashPoint = params.crashPoint;
     
+    // Reset cashout tracking
+    gameState.hasCashedOut = false;
+    gameState.cashedOutAt = 0;
+    
     // Hide analysis panel
     elements.symbolAnalysis.classList.add('hidden');
     
@@ -1172,8 +1180,8 @@ function startLinearRun(params) {
         // Draw on canvas
         drawCrashGraph(progress, currentMultiplier, params.crashPoint);
         
-        // Check for exit checkpoints - trigger when runner reaches the exact checkpoint position
-        if (gameState.exitCheckpoints && gameState.nextCheckpointIndex < gameState.exitCheckpoints.length) {
+        // Check for exit checkpoints - ONLY if player hasn't cashed out yet
+        if (!gameState.hasCashedOut && gameState.exitCheckpoints && gameState.nextCheckpointIndex < gameState.exitCheckpoints.length) {
             const nextCheckpoint = gameState.exitCheckpoints[gameState.nextCheckpointIndex];
             const tolerance = 0.5; // Small tolerance in meters
             if (!nextCheckpoint.triggered && currentMultiplier >= (nextCheckpoint.multiplier - tolerance)) {
@@ -1528,7 +1536,22 @@ function crash() {
     elements.caughtDistance.textContent = gameState.currentMultiplier.toFixed(2);
     elements.caughtOverlay.classList.remove('hidden');
 
-    showMessage(`CAUGHT! Monster got you at ${gameState.currentMultiplier.toFixed(2)}m!`, '#ff0000');
+    // Show different message based on whether player cashed out
+    let crashMessage;
+    if (gameState.hasCashedOut) {
+        const difference = gameState.currentMultiplier - gameState.cashedOutAt;
+        if (difference < 5) {
+            crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Close call! 😅`;
+        } else if (difference < 15) {
+            crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Good timing! 👍`;
+        } else {
+            crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Too early! 😬`;
+        }
+    } else {
+        crashMessage = `CAUGHT! Monster got you at ${gameState.currentMultiplier.toFixed(2)}m!`;
+    }
+
+    showMessage(crashMessage, '#ff0000');
     playSound('monsterCatch');
 
     // Red flash effect on canvas
