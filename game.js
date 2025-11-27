@@ -1132,8 +1132,8 @@ function startLinearRun(params) {
         const elapsed = Date.now() - crashRunStartTime;
         const progress = Math.min(elapsed / duration, 1);
 
-        // Exponential growth curve
-        const currentMultiplier = startValue + (endValue - startValue) * Math.pow(progress, 0.7);
+        // Linear progression - constant speed throughout (no hints about crash proximity)
+        const currentMultiplier = startValue + (endValue - startValue) * progress;
         gameState.currentMultiplier = currentMultiplier;
 
         elements.multiplierDisplay.textContent = currentMultiplier.toFixed(2) + 'm'; // meters escaped
