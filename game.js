@@ -223,10 +223,20 @@ function init() {
 
 function createReelGrid() {
     elements.reelContainer.innerHTML = '';
+    
+    // Create initial symbols showing a previous "spin" result
+    // Use a mix of symbols to look like a played game
+    const initialSymbols = [
+        '🪙', '🎰', '🍒', '💎', '🔔',
+        '⭐', '🪙', '7️⃣', '🍒', '🔔',
+        '💎', '⭐', '🎰', '🪙', '🍒',
+        '🔔', '💎', '🪙', '7️⃣', '⭐'
+    ];
+    
     for (let i = 0; i < 20; i++) {
         const cell = document.createElement('div');
         cell.className = 'reel-cell';
-        cell.innerHTML = '<span class="symbol">?</span>';
+        cell.innerHTML = `<span class="symbol">${initialSymbols[i]}</span>`;
         elements.reelContainer.appendChild(cell);
     }
 }
