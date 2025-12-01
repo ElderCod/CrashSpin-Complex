@@ -1072,12 +1072,14 @@ function startLinearRun(params) {
     const startValue = 0.00; // Start at 0 meters
     const endValue = params.crashPoint + 10; // Go a bit beyond crash point for animation
     
-    // Dynamic duration based on crash point - constant speed gameplay
-    // Speed: 3 meters per second (consistent speed regardless of crash distance)
-    const metersPerSecond = 3.0;
+    // Dynamic duration based on crash point and volatility
+    // Low vol: Slower, more strategic (2.0 m/s)
+    // High vol: Faster, more intense (4.0 m/s)
+    const isLowVol = params.gameMode === 'low';
+    const metersPerSecond = isLowVol ? 2.0 : 4.0;
     const duration = (endValue / metersPerSecond) * 1000; // Convert to milliseconds
     
-    console.log(`Run duration: ${(duration/1000).toFixed(1)}s for ${params.crashPoint.toFixed(2)}m crash point`);
+    console.log(`Run duration: ${(duration/1000).toFixed(1)}s for ${params.crashPoint.toFixed(2)}m crash point (${params.gameMode.toUpperCase()} VOL: ${metersPerSecond}m/s)`);
     
     // Initialize exit checkpoints and prizes - doors randomly spaced (5-10m apart)
     gameState.exitCheckpoints = [];
