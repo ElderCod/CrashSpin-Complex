@@ -6,7 +6,7 @@
 
 // ====== GAME STATE ======
 const gameState = {
-    bankedTotal: 10000.00,
+    bankedTotal: 1000.00,
     betAmount: 1.00,
     bestRun: 0.00,
     isSpinning: false,
@@ -1605,19 +1605,32 @@ function crash() {
     let crashMessage, overlayTitle, overlayResult;
     if (gameState.hasCashedOut) {
         const difference = gameState.currentMultiplier - gameState.cashedOutAt;
-        const cashoutAmount = gameState.totalCollected; // They already collected this
+        
+        // Calculate what they actually won (already banked)
+        const actualWinnings = gameState.totalCollected; // This was already collected and banked
+        
+        // Calculate prizes between cashout point and crash point (what they missed)
+        let missedPrizes = 0;
+        if (gameState.allPrizes) {
+            gameState.allPrizes.forEach(prize => {
+                if (prize.distance > gameState.cashedOutAt && prize.distance <= gameState.currentMultiplier) {
+                    missedPrizes += prize.value;
+                }
+            });
+        }
+        const potentialWinnings = actualWinnings + missedPrizes;
         
         overlayTitle = '🎯 CRASH POINT REVEALED!';
         
         if (difference < 5) {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Close call! 😅`;
-            overlayResult = `✅ You cashed out £${cashoutAmount.toFixed(2)} at ${gameState.cashedOutAt.toFixed(2)}m - Crashed just ${difference.toFixed(1)}m later!`;
+            overlayResult = `✅ You won £${actualWinnings.toFixed(2)} - Crashed just ${difference.toFixed(1)}m later! Would've been £${potentialWinnings.toFixed(2)}`;
         } else if (difference < 15) {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Good timing! 👍`;
-            overlayResult = `✅ You won £${cashoutAmount.toFixed(2)} at ${gameState.cashedOutAt.toFixed(2)}m - Solid cashout!`;
+            overlayResult = `✅ You won £${actualWinnings.toFixed(2)} - Solid cashout! Missed £${missedPrizes.toFixed(2)} in extra prizes`;
         } else {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Too early! 😬`;
-            overlayResult = `✅ You won £${cashoutAmount.toFixed(2)} at ${gameState.cashedOutAt.toFixed(2)}m - Could've gone ${difference.toFixed(1)}m further!`;
+            overlayResult = `✅ You won £${actualWinnings.toFixed(2)} - Could've won £${potentialWinnings.toFixed(2)} (+£${missedPrizes.toFixed(2)})!`;
         }
     } else {
         overlayTitle = '👹 CAUGHT BY MONSTER!';
@@ -1829,7 +1842,7 @@ function loadGameData() {
     const saved = localStorage.getItem('slotCrashGame');
     if (saved) {
         const data = JSON.parse(saved);
-        gameState.bankedTotal = data.bankedTotal || 10000.00;
+        gameState.bankedTotal = data.bankedTotal || 1000.00;
         gameState.bestRun = data.bestRun || 0.00;
         gameState.betAmount = data.betAmount || 1.00;
         
