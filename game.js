@@ -1304,8 +1304,12 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     const width = rect.width;
     const height = rect.height;
 
-    // Dark horror corridor background
-    ctx.fillStyle = '#0a0a0a';
+    // Check volatility mode
+    const isLowVol = gameState.pendingParams && gameState.pendingParams.gameMode === 'low';
+
+    // Different background colors for volatility modes
+    const bgColor = isLowVol ? '#0a0f0a' : '#0f0a0a'; // Green tint for low vol, Red tint for high vol
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
     
     // Add perspective lines (corridor walls)
@@ -1345,13 +1349,22 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     const runnerY = distToY(currentMultiplier);
 
     // Draw the full path from 0 to current position
+    // Different colors for volatility modes
+    const isLowVol = gameState.pendingParams && gameState.pendingParams.gameMode === 'low';
     const gradient = ctx.createLinearGradient(0, height, 0, 0);
-    gradient.addColorStop(0, '#ff6b6b');
-    gradient.addColorStop(1, '#ffaa00');
-    gradient.addColorStop(1, '#ffaa00');
+    
+    if (isLowVol) {
+        // Low vol: Green/Calm gradient
+        gradient.addColorStop(0, '#00ff00');
+        gradient.addColorStop(1, '#00ffaa');
+    } else {
+        // High vol: Red/Intense gradient
+        gradient.addColorStop(0, '#ff3333');
+        gradient.addColorStop(1, '#ff6666');
+    }
 
     ctx.strokeStyle = gradient;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = isLowVol ? 4 : 6; // Thicker line for high vol
     ctx.lineCap = 'round';
 
     // Draw the full line from 0 to current position
@@ -1486,15 +1499,30 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     }
 
     // Draw survivor sprite at current position
-    // Color based on volatility: Green for low vol (safer), Red for high vol (riskier)
+    // Enhanced glow based on volatility mode
     const isLowVol = gameState.pendingParams && gameState.pendingParams.gameMode === 'low';
     const runnerColor = isLowVol ? '#00ff00' : '#ff3333'; // Green for low vol, Red for high vol
     
+    // Draw glow circle behind runner
     ctx.fillStyle = runnerColor;
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 30;
     ctx.shadowColor = runnerColor;
+    ctx.beginPath();
+    ctx.arc(runnerX, runnerY, 15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    
+    // Draw runner emoji
     ctx.font = 'bold 24px Arial';
     ctx.fillText('🏃', runnerX - 12, runnerY + 8);
+    
+    // Draw mode label near runner
+    ctx.font = 'bold 14px Arial';
+    ctx.fillStyle = runnerColor;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = runnerColor;
+    const modeText = isLowVol ? '🟢 LOW VOL' : '🔴 HIGH VOL';
+    ctx.fillText(modeText, runnerX + 20, runnerY - 10);
     ctx.shadowBlur = 0;
 
     // ====== SUBTLE HORROR - Random Light System ======
