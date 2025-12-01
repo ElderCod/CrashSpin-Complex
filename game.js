@@ -1486,9 +1486,13 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     }
 
     // Draw survivor sprite at current position
-    ctx.fillStyle = '#ffaa00';
+    // Color based on volatility: Green for low vol (safer), Red for high vol (riskier)
+    const isLowVol = gameState.pendingParams && gameState.pendingParams.gameMode === 'low';
+    const runnerColor = isLowVol ? '#00ff00' : '#ff3333'; // Green for low vol, Red for high vol
+    
+    ctx.fillStyle = runnerColor;
     ctx.shadowBlur = 20;
-    ctx.shadowColor = '#ffaa00';
+    ctx.shadowColor = runnerColor;
     ctx.font = 'bold 24px Arial';
     ctx.fillText('🏃', runnerX - 12, runnerY + 8);
     ctx.shadowBlur = 0;
@@ -1542,6 +1546,9 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
 function crash() {
     gameState.isRunning = false;
     gameState.canCashout = false;
+    
+    // Hide cashout banner if showing
+    elements.cashoutWatchingBanner.classList.add('hidden');
     
     // Reset consumed meter based on which game mode was played
     if (gameState.pendingParams && gameState.pendingParams.gameMode) {
