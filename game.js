@@ -176,6 +176,10 @@ function init() {
         caughtOverlay: document.getElementById('caught-overlay'),
         caughtContinueBtn: document.getElementById('caught-continue-btn'),
         caughtDistance: document.getElementById('caught-distance'),
+        caughtTitle: document.getElementById('caught-title'),
+        caughtResult: document.getElementById('caught-result'),
+        cashoutWatchingBanner: document.getElementById('cashout-watching-banner'),
+        cashoutWonAmount: document.getElementById('cashout-won-amount'),
         debugBonusBtn: document.getElementById('debug-bonus-btn'),
         debugCatchBtn: document.getElementById('debug-catch-btn'),
         lowVolMeterFill: document.getElementById('low-vol-meter-fill'),
@@ -560,6 +564,10 @@ function handleSideExitTake() {
     gameState.cashedOutAt = gameState.currentMultiplier;
     
     elements.sideExitOverlay.classList.add('hidden');
+    
+    // Show cashout watching banner
+    elements.cashoutWonAmount.textContent = payout.toFixed(2);
+    elements.cashoutWatchingBanner.classList.remove('hidden');
     
     // Reset consumed meter
     if (gameState.pendingParams && gameState.pendingParams.gameMode) {
@@ -1038,6 +1046,9 @@ function startLinearRun(params) {
     // Reset cashout tracking
     gameState.hasCashedOut = false;
     gameState.cashedOutAt = 0;
+    
+    // Hide cashout banner
+    elements.cashoutWatchingBanner.classList.add('hidden');
     
     // Hide analysis panel
     elements.symbolAnalysis.classList.add('hidden');
@@ -1546,24 +1557,39 @@ function crash() {
     // Generate random leaderboard
     generateFakeLeaderboard();
     
-    // Show caught overlay
+    // Show caught overlay with different content based on cashout status
     elements.caughtDistance.textContent = gameState.currentMultiplier.toFixed(2);
-    elements.caughtOverlay.classList.remove('hidden');
-
-    // Show different message based on whether player cashed out
-    let crashMessage;
+    
+    // Customize overlay based on whether player cashed out
+    let crashMessage, overlayTitle, overlayResult;
     if (gameState.hasCashedOut) {
         const difference = gameState.currentMultiplier - gameState.cashedOutAt;
+        const cashoutAmount = gameState.totalCollected; // They already collected this
+        
+        overlayTitle = '🎯 CRASH POINT REVEALED!';
+        
         if (difference < 5) {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Close call! 😅`;
+            overlayResult = `✅ You cashed out £${cashoutAmount.toFixed(2)} at ${gameState.cashedOutAt.toFixed(2)}m - Crashed just ${difference.toFixed(1)}m later!`;
         } else if (difference < 15) {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Good timing! 👍`;
+            overlayResult = `✅ You won £${cashoutAmount.toFixed(2)} at ${gameState.cashedOutAt.toFixed(2)}m - Solid cashout!`;
         } else {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Too early! 😬`;
+            overlayResult = `✅ You won £${cashoutAmount.toFixed(2)} at ${gameState.cashedOutAt.toFixed(2)}m - Could've gone ${difference.toFixed(1)}m further!`;
         }
     } else {
+        overlayTitle = '👹 CAUGHT BY MONSTER!';
         crashMessage = `CAUGHT! Monster got you at ${gameState.currentMultiplier.toFixed(2)}m!`;
+        overlayResult = '💀 Lost all progress this run!';
     }
+    
+    // Update overlay elements
+    elements.caughtTitle.textContent = overlayTitle;
+    elements.caughtResult.textContent = overlayResult;
+    elements.caughtResult.className = gameState.hasCashedOut ? 'success' : 'warning';
+    
+    elements.caughtOverlay.classList.remove('hidden');
 
     showMessage(crashMessage, '#ff0000');
     playSound('monsterCatch');

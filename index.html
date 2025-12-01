@@ -34,6 +34,14 @@
                     <div id="multiplier-display">0m</div>
                     <div id="crash-message"></div>
                 </div>
+                
+                <!-- Cashout Watching Banner -->
+                <div id="cashout-watching-banner" class="hidden">
+                    <div class="banner-title">✅ CASHED OUT SAFELY!</div>
+                    <div class="banner-amount">Won: £<span id="cashout-won-amount">0.00</span></div>
+                    <div style="font-size: 16px; margin-top: 5px;">Watching where it crashes...</div>
+                </div>
+                
                 <!-- Exit Choice Overlay -->
                 <div id="exit-choice-overlay" class="hidden">
                     <div class="exit-choice-panel">
@@ -84,10 +92,10 @@
                 <!-- Monster Caught Overlay -->
                 <div id="caught-overlay" class="hidden">
                     <div class="caught-panel">
-                        <h3>👹 CAUGHT BY MONSTER!</h3>
+                        <h3 id="caught-title">👹 CAUGHT BY MONSTER!</h3>
                         <div class="caught-stats">
-                            <div>Distance Reached: <span id="caught-distance">0.00</span>m</div>
-                            <div class="warning">💀 Lost all progress this run!</div>
+                            <div>Crash Point: <span id="caught-distance">0.00</span>m</div>
+                            <div id="caught-result" class="warning">💀 Lost all progress this run!</div>
                         </div>
                         <div class="leaderboard">
                             <h4>🏆 TOP WINNERS TODAY</h4>
