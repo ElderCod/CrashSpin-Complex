@@ -1350,7 +1350,6 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
 
     // Draw the full path from 0 to current position
     // Different colors for volatility modes
-    const isLowVol = gameState.pendingParams && gameState.pendingParams.gameMode === 'low';
     const gradient = ctx.createLinearGradient(0, height, 0, 0);
     
     if (isLowVol) {
@@ -1500,7 +1499,6 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
 
     // Draw survivor sprite at current position
     // Enhanced glow based on volatility mode
-    const isLowVol = gameState.pendingParams && gameState.pendingParams.gameMode === 'low';
     const runnerColor = isLowVol ? '#00ff00' : '#ff3333'; // Green for low vol, Red for high vol
     
     // Draw glow circle behind runner
