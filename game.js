@@ -935,7 +935,7 @@ function calculateMazeParams(gameMode) {
     // Using exponential distribution: -log(random) gives us the crash curve
     // House edge affects the decay rate
     const houseEdge = 0.03; // 3% house edge for 97% RTP
-    const volatilityMultiplier = isLowVol ? 0.8 : 1.3; // Low vol = shorter avg, High vol = longer avg
+    const volatilityMultiplier = isLowVol ? 1.1 : 1.5; // Low vol avg ~27m, High vol avg ~37m
     
     // Generate crash point using exponential distribution
     // Most crashes: 5-20m, Common: 20-50m, Uncommon: 50-100m, Rare: 100-500m, Super rare: 500m+
@@ -1067,11 +1067,11 @@ function startLinearRun(params) {
         initCanvas();
     }
 
-    // DON'T start timer yet - wait for screen expansion to complete!
+    // DON't start timer yet - wait for screen expansion to complete!
     // crashRunStartTime will be set after a delay
     const startValue = 0.00; // Start at 0 meters
     const endValue = params.crashPoint + 10; // Go a bit beyond crash point for animation
-    const duration = 30000; // 30 seconds - slower, more strategic gameplay
+    const duration = 15000; // 15 seconds - faster paced gameplay
     
     // Initialize exit checkpoints and prizes - doors randomly spaced (5-10m apart)
     gameState.exitCheckpoints = [];
