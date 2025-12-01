@@ -1071,7 +1071,13 @@ function startLinearRun(params) {
     // crashRunStartTime will be set after a delay
     const startValue = 0.00; // Start at 0 meters
     const endValue = params.crashPoint + 10; // Go a bit beyond crash point for animation
-    const duration = 15000; // 15 seconds - faster paced gameplay
+    
+    // Dynamic duration based on crash point - constant speed gameplay
+    // Speed: 3 meters per second (consistent speed regardless of crash distance)
+    const metersPerSecond = 3.0;
+    const duration = (endValue / metersPerSecond) * 1000; // Convert to milliseconds
+    
+    console.log(`Run duration: ${(duration/1000).toFixed(1)}s for ${params.crashPoint.toFixed(2)}m crash point`);
     
     // Initialize exit checkpoints and prizes - doors randomly spaced (5-10m apart)
     gameState.exitCheckpoints = [];
@@ -1079,7 +1085,7 @@ function startLinearRun(params) {
     gameState.totalCollected = 0;
     
     // Start first door at 10-15m to give player more breathing room at start
-    let nextDoorDistance = 10 + Math.random() * 5; // Start 10-15m in (gives ~10-15 seconds)
+    let nextDoorDistance = 10 + Math.random() * 5; // Start 10-15m in
     
     // Generate prizes between doors (bronze, silver, gold)
     // DISTANCE-SCALED PRIZES: Further = Bigger rewards (like crash multipliers)
