@@ -941,6 +941,7 @@ body.crashed::after {
     max-width: 500px;
     text-align: center;
     box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+    pointer-events: auto;
 }
 
 .exit-choice-panel h3 {
@@ -1046,6 +1047,7 @@ body.crashed::after {
     text-align: center;
     box-shadow: 0 0 20px rgba(255, 170, 0, 0.5);
     animation: pulse-border 2s ease-in-out infinite;
+    pointer-events: auto;
 }
 
 @keyframes pulse-border {
@@ -1136,6 +1138,7 @@ body.crashed::after {
     text-align: center;
     box-shadow: 0 0 30px rgba(205, 127, 50, 0.5);
     animation: lootPulse 1.5s ease-in-out infinite;
+    pointer-events: auto;
 }
 
 @keyframes lootPulse {
@@ -1249,6 +1252,7 @@ body.crashed::after {
     text-align: center;
     box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
     animation: monsterPulse 1s ease-in-out infinite;
+    pointer-events: auto;
 }
 
 @keyframes monsterPulse {
