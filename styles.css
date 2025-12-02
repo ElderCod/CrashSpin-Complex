@@ -925,6 +925,8 @@ body.crashed::after {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    pointer-events: auto;
+    touch-action: auto;
 }
 
 #exit-choice-overlay.hidden {
@@ -1117,6 +1119,8 @@ body.crashed::after {
     align-items: center;
     justify-content: center;
     z-index: 1001;
+    pointer-events: auto;
+    touch-action: auto;
 }
 
 #loot-choice-overlay.hidden {
@@ -1228,6 +1232,8 @@ body.crashed::after {
     align-items: center;
     justify-content: center;
     z-index: 1002;
+    pointer-events: auto;
+    touch-action: auto;
 }
 
 #caught-overlay.hidden {
