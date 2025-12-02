@@ -1783,12 +1783,12 @@ body.crash-active #meter-container {
     }
 
     #reel-area {
-        padding: 0 10px;
+        padding: 0 5px;
     }
 
     #reel-container {
         gap: 2px;
-        padding: 3px;
+        padding: 2px;
     }
 
     .reel-cell {
