@@ -618,7 +618,8 @@ body.crash-active #symbol-analysis {
 }
 
 #controls {
-    margin-top: 10px;
+    margin-top: 0;
+    margin-bottom: 10px;
     display: flex;
     flex-direction: row;
     gap: 12px;
@@ -626,7 +627,7 @@ body.crash-active #symbol-analysis {
     align-items: center;
     flex-wrap: wrap;
     flex-shrink: 0;
-    padding-bottom: 5px;
+    padding: 5px;
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
