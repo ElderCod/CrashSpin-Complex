@@ -1810,28 +1810,33 @@ body.crash-active #meter-container {
         padding: 4px;
         gap: 4px;
         margin-top: 5px;
+        flex-direction: row;
+        flex-wrap: nowrap;
     }
 
     #bet-selector {
-        flex-direction: column;
-        gap: 4px;
-        padding: 4px 8px;
+        flex-direction: row;
+        gap: 3px;
+        padding: 3px 6px;
+        flex-shrink: 1;
     }
 
     .bet-label {
-        font-size: 10px;
-        margin-bottom: 2px;
+        display: none;
     }
 
     .bet-option {
-        padding: 6px 12px;
-        font-size: 12px;
+        padding: 6px 8px;
+        font-size: 11px;
+        flex: 1;
+        min-width: 40px;
     }
 
     .btn-primary, .btn-danger {
-        padding: 8px 16px;
-        font-size: 14px;
+        padding: 6px 12px;
+        font-size: 13px;
         min-height: 44px;
+        flex: 1;
     }
 
     /* Scale overlay panels for phones */
