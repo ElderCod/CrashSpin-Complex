@@ -1764,7 +1764,7 @@ body.crash-active #meter-container {
 @media (max-width: 480px) {
     /* Optimize dual screen for phones */
     #top-screen {
-        flex: 0 0 40vh;
+        flex: 0 0 35vh;
     }
 
     #slot-header {
@@ -1807,8 +1807,31 @@ body.crash-active #meter-container {
     }
 
     #controls {
-        padding: 6px;
-        gap: 6px;
+        padding: 4px;
+        gap: 4px;
+        margin-top: 5px;
+    }
+
+    #bet-selector {
+        flex-direction: column;
+        gap: 4px;
+        padding: 4px 8px;
+    }
+
+    .bet-label {
+        font-size: 10px;
+        margin-bottom: 2px;
+    }
+
+    .bet-option {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .btn-primary, .btn-danger {
+        padding: 8px 16px;
+        font-size: 14px;
+        min-height: 44px;
     }
 
     /* Scale overlay panels for phones */
