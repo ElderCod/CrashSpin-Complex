@@ -97,11 +97,11 @@ body::before {
     50% { transform: scale(1.05); }
 }
 
-/* ====== TOP SCREEN: HORROR CHASE (30% default, 100% when active) ====== */
+/* ====== TOP SCREEN: HORROR CHASE (50% default, stays visible during game) ====== */
 #top-screen {
-    flex: 0 0 30vh;
-    min-height: 30vh;
-    max-height: 30vh;
+    flex: 0 0 50vh;
+    min-height: 50vh;
+    max-height: 50vh;
     background: linear-gradient(180deg, #1a0000 0%, #0a0a0a 100%);
     display: flex;
     flex-direction: column;
@@ -111,19 +111,11 @@ body::before {
     transition: all 0.3s ease;
 }
 
-/* Expand crash screen during bonus */
+/* Keep crash screen visible alongside reels during game */
 body.crash-active #top-screen {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 1200px;
-    height: 100vh;
-    max-height: 100vh;
-    min-height: 100vh;
-    flex: none;
-    z-index: 10;
+    flex: 0 0 50vh;
+    min-height: 50vh;
+    max-height: 50vh;
 }
 
 #crash-header {
@@ -159,7 +151,7 @@ body.crash-active #top-screen {
 #crash-display {
     flex: 1;
     position: relative;
-    overflow: hidden;
+    overflow: auto;
 }
 
 #crashCanvas {
@@ -221,16 +213,15 @@ body.crash-active #top-screen {
     background: linear-gradient(180deg, #0a0a0a 0%, #1a0000 100%);
     display: flex;
     flex-direction: column;
-    padding: 15px;
+    padding: 8px;
     overflow: hidden;
     box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease;
 }
 
-/* Hide reel screen during crash bonus */
+/* Keep reel screen visible during crash bonus - dual screen view */
 body.crash-active #bottom-screen {
-    visibility: hidden;
-    opacity: 0;
+    /* Both screens visible */
 }
 
 #slot-header {
@@ -242,13 +233,9 @@ body.crash-active #bottom-screen {
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-/* Hide slot header during crash game */
+/* Keep slot header visible during crash game */
 body.crash-active #slot-header {
-    opacity: 0;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    overflow: hidden;
+    /* Visible */
 }
 
 #slot-header h2 {
@@ -333,24 +320,19 @@ body.crash-active #slot-header {
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-/* Hide reels during crash game */
+/* Keep reels visible during crash game - dual screen mode */
 body.crash-active #reel-area {
-    opacity: 0;
-    visibility: hidden;
-    height: 0;
-    overflow: hidden;
-    flex: 0;
-    padding: 0;
+    /* Reels stay visible */
 }
 
 #reel-container {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: 8px;
+    grid-template-rows: repeat(3, 1fr); /* Changed from 4 to 3 rows */
+    gap: 5px;
     background: rgba(0, 0, 0, 0.6);
-    padding: 10px;
+    padding: 6px;
     border-radius: 10px;
     border: 3px solid rgba(139, 0, 0, 0.4);
     min-height: 0;
@@ -365,12 +347,12 @@ body.crash-active #reel-area {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 20px;
     font-weight: bold;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    min-height: 40px;
+    min-height: 30px;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -385,7 +367,7 @@ body.crash-active #reel-area {
 }
 
 .reel-cell .symbol {
-    font-size: 32px;
+    font-size: 24px;
 }
 
 .reel-cell .point-value {
@@ -1050,12 +1032,12 @@ body.crashed::after {
 
 .side-exit-panel {
     background: linear-gradient(135deg, #1a0a00 0%, #0a0a0a 100%);
-    border: 4px solid #ffaa00;
-    border-radius: 15px;
-    padding: 30px;
-    max-width: 500px;
+    border: 3px solid #ffaa00;
+    border-radius: 10px;
+    padding: 12px;
+    max-width: 320px;
     text-align: center;
-    box-shadow: 0 0 30px rgba(255, 170, 0, 0.5);
+    box-shadow: 0 0 20px rgba(255, 170, 0, 0.5);
     animation: pulse-border 2s ease-in-out infinite;
 }
 
@@ -1065,45 +1047,45 @@ body.crashed::after {
 }
 
 .side-exit-panel h3 {
-    font-size: 32px;
+    font-size: 18px;
     color: #ffaa00;
-    margin-bottom: 25px;
+    margin-bottom: 8px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    text-shadow: 0 0 15px rgba(255, 170, 0, 0.8);
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.8);
 }
 
 .side-exit-stats {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .side-exit-stats > div {
-    margin: 12px 0;
-    font-size: 18px;
+    margin: 4px 0;
+    font-size: 13px;
 }
 
 .exit-timer {
     color: #aaa;
-    font-size: 16px;
+    font-size: 13px;
 }
 
 .exit-payout {
-    font-size: 36px;
+    font-size: 20px;
     font-weight: bold;
     color: #00ff00;
-    text-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
-    margin: 15px 0;
+    text-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+    margin: 6px 0;
 }
 
 .exit-multiplier {
     color: #ffaa00;
-    font-size: 18px;
+    font-size: 14px;
 }
 
 .side-exit-stats .warning {
     color: #ff6b6b;
-    font-size: 16px;
-    margin-top: 15px;
+    font-size: 13px;
+    margin-top: 8px;
     animation: flash 1.5s ease-in-out infinite;
 }
 
@@ -1249,14 +1231,12 @@ body.crashed::after {
 
 .caught-panel {
     background: linear-gradient(135deg, #2a0000 0%, #0a0a0a 100%);
-    border: 3px solid #ff0000;
-    border-radius: 15px;
-    padding: 20px;
-    max-width: 400px;
-    max-height: 90vh;
-    overflow-y: auto;
+    border: 2px solid #ff0000;
+    border-radius: 10px;
+    padding: 12px;
+    max-width: 320px;
     text-align: center;
-    box-shadow: 0 0 40px rgba(255, 0, 0, 0.7);
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
     animation: monsterPulse 1s ease-in-out infinite;
 }
 
@@ -1266,49 +1246,49 @@ body.crashed::after {
 }
 
 .caught-panel h3 {
-    font-size: 32px;
+    font-size: 18px;
     color: #ff0000;
-    margin-bottom: 15px;
-    text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+    margin-bottom: 6px;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
 }
 
 .caught-stats {
     background: rgba(0, 0, 0, 0.5);
-    padding: 15px;
-    border-radius: 10px;
-    margin: 15px 0;
-    font-size: 18px;
+    padding: 8px;
+    border-radius: 8px;
+    margin: 8px 0;
+    font-size: 13px;
 }
 
 .caught-stats > div {
-    margin: 10px 0;
-    padding: 5px;
+    margin: 5px 0;
+    padding: 3px;
 }
 
 .caught-stats .success {
     color: #00ff00;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    text-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
     background: rgba(0, 255, 0, 0.1);
-    padding: 10px;
-    border-radius: 8px;
+    padding: 6px;
+    border-radius: 6px;
     border: 2px solid rgba(0, 255, 0, 0.3);
 }
 
 .leaderboard {
     background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 8px;
-    margin: 12px 0;
+    padding: 6px;
+    border-radius: 6px;
+    margin: 8px 0;
     border: 2px solid rgba(255, 215, 0, 0.3);
-    max-height: 150px;
+    max-height: 100px;
     overflow-y: auto;
 }
 
 .leaderboard h4 {
     color: #ffd700;
-    font-size: 14px;
-    margin-bottom: 8px;
+    font-size: 12px;
+    margin-bottom: 4px;
     text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
@@ -1619,6 +1599,48 @@ body.crash-active #meter-container {
         max-width: 100%;
     }
 
+    /* Adjust dual screen heights for tablets */
+    #top-screen {
+        flex: 0 0 45vh;
+    }
+
+    #reel-area {
+        padding: 0 20px;
+    }
+
+    #reel-container {
+        gap: 3px;
+        padding: 4px;
+    }
+
+    .reel-cell {
+        font-size: 16px;
+        min-height: 25px;
+    }
+
+    .reel-symbol {
+        font-size: 20px;
+    }
+
+    /* Scale overlay panels */
+    .side-exit-panel, .caught-panel {
+        max-width: 280px;
+        padding: 10px;
+    }
+
+    .side-exit-panel h3, .caught-panel h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+    }
+
+    .side-exit-stats > div, .caught-stats {
+        font-size: 12px;
+    }
+
+    .exit-payout {
+        font-size: 18px;
+    }
+
     /* Make transition overlay text smaller */
     .transition-icon {
         font-size: 80px;
@@ -1740,6 +1762,90 @@ body.crash-active #meter-container {
 
 /* Mobile phones */
 @media (max-width: 480px) {
+    /* Optimize dual screen for phones */
+    #top-screen {
+        flex: 0 0 40vh;
+    }
+
+    #slot-header {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+    #balance, #bet-controls {
+        font-size: 11px;
+    }
+
+    #bet-amount {
+        font-size: 13px;
+        padding: 2px 6px;
+    }
+
+    #reel-area {
+        padding: 0 10px;
+    }
+
+    #reel-container {
+        gap: 2px;
+        padding: 3px;
+    }
+
+    .reel-cell {
+        font-size: 14px;
+        min-height: 22px;
+        border-width: 1px;
+    }
+
+    .reel-symbol {
+        font-size: 18px;
+    }
+
+    #spin-btn {
+        height: 50px;
+        width: 50px;
+        font-size: 18px;
+    }
+
+    #controls {
+        padding: 6px;
+        gap: 6px;
+    }
+
+    /* Scale overlay panels for phones */
+    .side-exit-panel, .caught-panel {
+        max-width: 240px;
+        padding: 8px;
+    }
+
+    .side-exit-panel h3, .caught-panel h3 {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .side-exit-stats > div, .caught-stats {
+        font-size: 11px;
+        margin: 3px 0;
+    }
+
+    .exit-payout {
+        font-size: 16px;
+        margin: 4px 0;
+    }
+
+    .exit-multiplier, .exit-timer {
+        font-size: 11px;
+    }
+
+    .leaderboard {
+        max-height: 80px;
+        padding: 4px;
+        font-size: 10px;
+    }
+
+    .leaderboard h4 {
+        font-size: 11px;
+    }
+
     /* Even smaller text for phones */
     .transition-icon {
         font-size: 60px;

@@ -1,4 +1,4 @@
-// Theme: horror chase.
+﻿// Theme: horror chase.
 // Survivor is running from a monster with stolen cash.
 // Use same crash logic (progress bar until random crashPoint).
 // When crash occurs, show red flash and monster scream sound.
@@ -21,11 +21,10 @@ const gameState = {
     mazePot: 0,
     collectedPrizes: [],  // Prizes collected during current run (bronze/silver/gold)
     totalCollected: 0,    // Running total of collected prizes
-    lowVolMeter: 0,       // Green meter (0-40)
-    highVolMeter: 0,      // Red meter (0-40)
-    pendingGameMode: null, // 'low' or 'high' - which crash game to launch
     hasCashedOut: false,  // Track if player cashed out early (to show crash point)
-    cashedOutAt: 0        // Distance where player cashed out
+    cashedOutAt: 0,       // Distance where player cashed out
+    cashedOutAmount: 0,   // Amount won when cashing out
+    allPrizes: []         // All generated prizes for potential winnings calculation
 };
 
 // ====== SYMBOL DEFINITIONS (Slot Game) ======
@@ -37,34 +36,20 @@ const SYMBOLS = {
     // LOW PAYS
     talisman:   { emoji: '🗿', name: 'talisman',   weight: 20, pays: [0, 0, 0.2, 0.5, 2.0] },
     scrap:      { emoji: '🔩', name: 'scrap',      weight: 20, pays: [0, 0, 0.2, 0.5, 2.5] },
-    coin:       { emoji: '🪙', name: 'coin',       weight: 18, pays: [0, 0, 0.3, 0.6, 3.0] },
+    coin:       { emoji: '🪙', name: 'coin',       weight: 20, pays: [0, 0, 0.3, 0.6, 3.0] },
     
     // MID PAYS
-    footsteps:  { emoji: '👣', name: 'footsteps',  weight: 14, pays: [0, 0, 0.5, 2.0, 5.0] },
-    crow:       { emoji: '🦅', name: 'crow',       weight: 14, pays: [0, 0, 0.5, 2.5, 7.0] },
+    footsteps:  { emoji: '👣', name: 'footsteps',  weight: 15, pays: [0, 0, 0.5, 2.0, 5.0] },
+    crow:       { emoji: '🦅', name: 'crow',       weight: 15, pays: [0, 0, 0.5, 2.5, 7.0] },
     camera:     { emoji: '📹', name: 'camera',     weight: 12, pays: [0, 0, 1.0, 3.0, 10.0] },
     
     // HIGH PAYS
-    safe:       { emoji: '🔐', name: 'safe',       weight: 8,  pays: [0, 0, 2.0, 10.0, 20.0] },
-    relic:      { emoji: '💎', name: 'relic',      weight: 6,  pays: [0, 0, 3.0, 15.0, 40.0] },
+    safe:       { emoji: '🔐', name: 'safe',       weight: 10, pays: [0, 0, 2.0, 10.0, 20.0] },
+    relic:      { emoji: '💎', name: 'relic',      weight: 8,  pays: [0, 0, 3.0, 15.0, 40.0] },
     
     // SPECIAL SYMBOLS
-    wild:       { emoji: '⚡', name: 'wild',       weight: 5,  pays: [0, 0, 0, 0, 0], isWild: true },
-    crash:      { emoji: '💥', name: 'crash',      weight: 2,  pays: [0, 0, 0, 0, 0], isCrash: true },  // Triggers crash game (~every 5-10 spins)
-    
-    // LOW VOL POINT SYMBOLS (Green - feed left meter)
-    greenPt1:   { emoji: '🟢', name: 'greenPt1',   weight: 8,  pays: [0, 0, 0, 0, 0], pointValue: 1, meterType: 'low' },
-    greenPt2:   { emoji: '🟢', name: 'greenPt2',   weight: 6,  pays: [0, 0, 0, 0, 0], pointValue: 2, meterType: 'low' },
-    greenPt3:   { emoji: '🟢', name: 'greenPt3',   weight: 4,  pays: [0, 0, 0, 0, 0], pointValue: 3, meterType: 'low' },
-    greenPt4:   { emoji: '🟢', name: 'greenPt4',   weight: 3,  pays: [0, 0, 0, 0, 0], pointValue: 4, meterType: 'low' },
-    greenPt5:   { emoji: '🟢', name: 'greenPt5',   weight: 2,  pays: [0, 0, 0, 0, 0], pointValue: 5, meterType: 'low' },
-    
-    // HIGH VOL POINT SYMBOLS (Red - feed right meter)
-    redPt1:     { emoji: '🔴', name: 'redPt1',     weight: 8,  pays: [0, 0, 0, 0, 0], pointValue: 1, meterType: 'high' },
-    redPt2:     { emoji: '🔴', name: 'redPt2',     weight: 6,  pays: [0, 0, 0, 0, 0], pointValue: 2, meterType: 'high' },
-    redPt3:     { emoji: '🔴', name: 'redPt3',     weight: 4,  pays: [0, 0, 0, 0, 0], pointValue: 3, meterType: 'high' },
-    redPt4:     { emoji: '🔴', name: 'redPt4',     weight: 3,  pays: [0, 0, 0, 0, 0], pointValue: 4, meterType: 'high' },
-    redPt5:     { emoji: '🔴', name: 'redPt5',     weight: 2,  pays: [0, 0, 0, 0, 0], pointValue: 5, meterType: 'high' }
+    wild:       { emoji: '⚡', name: 'wild',       weight: 6,  pays: [0, 0, 0, 0, 0], isWild: true },
+    crash:      { emoji: '💥', name: 'crash',      weight: 2,  pays: [0, 0, 0, 0, 0], isCrash: true }  // Triggers crash game
 };
 
 // Maze tuning table (12 levels)
@@ -84,38 +69,40 @@ const MAZE_TUNING = [
     { multRange:[250,500],   monsterSpd:1.65, playerSpd:0.90, lootDensity:2.1, sanctChance:0.03, crashProb:0.90 }   // Maze 12
 ];
 
-// ====== PAYLINES (5x4 grid = 20 positions) ======
+// ====== PAYLINES (5x3 grid = 15 positions) ======
 // Each payline is an array of [row, col] positions
-// Grid layout: [row 0-3][col 0-4]
+// Grid layout: [row 0-2][col 0-4]
 const PAYLINES = [
-    // Straight lines (5)
+    // Straight lines (3)
     [[0,0],[0,1],[0,2],[0,3],[0,4]], // Top row
-    [[1,0],[1,1],[1,2],[1,3],[1,4]], // Second row
-    [[2,0],[2,1],[2,2],[2,3],[2,4]], // Third row
-    [[3,0],[3,1],[3,2],[3,3],[3,4]], // Bottom row
-    [[1,0],[2,1],[2,2],[2,3],[1,4]], // Middle zigzag
+    [[1,0],[1,1],[1,2],[1,3],[1,4]], // Middle row
+    [[2,0],[2,1],[2,2],[2,3],[2,4]], // Bottom row
     
-    // V-shapes (4)
-    [[0,0],[1,1],[2,2],[1,3],[0,4]], // V from top
-    [[3,0],[2,1],[1,2],[2,3],[3,4]], // V from bottom
-    [[1,0],[0,1],[0,2],[0,3],[1,4]], // Shallow V top
-    [[2,0],[3,1],[3,2],[3,3],[2,4]], // Shallow V bottom
+    // Diagonals (2)
+    [[0,0],[1,1],[2,2],[1,3],[0,4]], // V shape
+    [[2,0],[1,1],[0,2],[1,3],[2,4]], // Inverted V
     
-    // W/M shapes (4)
-    [[0,0],[1,1],[0,2],[1,3],[0,4]], // W top
-    [[3,0],[2,1],[3,2],[2,3],[3,4]], // M bottom
-    [[1,0],[2,1],[1,2],[2,3],[1,4]], // W middle
-    [[2,0],[1,1],[2,2],[1,3],[2,4]], // M middle
-    
-    // Diagonals and zigzags (8)
-    [[0,0],[1,1],[2,2],[3,3],[2,4]], // Diagonal down-up
-    [[3,0],[2,1],[1,2],[0,3],[1,4]], // Diagonal up-down
-    [[0,0],[0,1],[1,2],[2,3],[3,4]], // Stairs down
-    [[3,0],[3,1],[2,2],[1,3],[0,4]], // Stairs up
-    [[1,0],[1,1],[2,2],[3,3],[3,4]], // Lower stairs
-    [[2,0],[2,1],[1,2],[0,3],[0,4]], // Upper stairs
-    [[0,0],[2,1],[3,2],[2,3],[0,4]], // Deep V
-    [[3,0],[1,1],[0,2],[1,3],[3,4]]  // Deep mountain
+    // Zigzags (10)
+    [[0,0],[0,1],[1,2],[2,3],[2,4]], // Top zigzag down
+    [[2,0],[2,1],[1,2],[0,3],[0,4]], // Bottom zigzag up
+    [[0,0],[1,1],[1,2],[1,3],[0,4]], // Shallow V from top
+    [[2,0],[1,1],[1,2],[1,3],[2,4]], // Shallow V from bottom
+    [[0,0],[1,1],[0,2],[1,3],[0,4]], // W shape top
+    [[2,0],[1,1],[2,2],[1,3],[2,4]], // M shape bottom
+    [[1,0],[0,1],[0,2],[0,3],[1,4]], // Roof shape
+    [[1,0],[2,1],[2,2],[2,3],[1,4]], // Floor shape
+    [[0,0],[1,1],[2,2],[2,3],[2,4]], // Diagonal stairs down
+    [[2,0],[1,1],[0,2],[0,3],[0,4]], // Diagonal stairs up
+    [[0,0],[0,1],[0,2],[1,3],[2,4]], // Top line to diagonal
+    [[2,0],[2,1],[2,2],[1,3],[0,4]], // Bottom line to diagonal
+    [[0,0],[1,1],[2,2],[1,3],[2,4]], // Mixed diagonal 1
+    [[2,0],[1,1],[0,2],[1,3],[0,4]], // Mixed diagonal 2
+    [[0,0],[0,1],[1,2],[0,3],[0,4]], // Top dip
+    [[2,0],[2,1],[1,2],[2,3],[2,4]], // Bottom dip
+    [[1,0],[0,1],[1,2],[0,3],[1,4]], // Wave top
+    [[1,0],[2,1],[1,2],[2,3],[1,4]], // Wave bottom
+    [[0,0],[2,1],[0,2],[2,3],[0,4]], // Sharp zigzag 1
+    [[2,0],[0,1],[2,2],[0,3],[2,4]]  // Sharp zigzag 2
 ];
 
 // ====== CONFIG ======
@@ -180,17 +167,9 @@ function init() {
         caughtResult: document.getElementById('caught-result'),
         cashoutWatchingBanner: document.getElementById('cashout-watching-banner'),
         cashoutWonAmount: document.getElementById('cashout-won-amount'),
+        resetBalanceBtn: document.getElementById('reset-balance-btn'),
         debugBonusBtn: document.getElementById('debug-bonus-btn'),
-        debugCatchBtn: document.getElementById('debug-catch-btn'),
-        lowVolMeterFill: document.getElementById('low-vol-meter-fill'),
-        lowVolMeterValue: document.getElementById('low-vol-meter-value'),
-        highVolMeterFill: document.getElementById('high-vol-meter-fill'),
-        highVolMeterValue: document.getElementById('high-vol-meter-value'),
-        volatilityChoice: document.getElementById('volatility-choice-overlay'),
-        chooseLowVolBtn: document.getElementById('choose-low-vol-btn'),
-        chooseHighVolBtn: document.getElementById('choose-high-vol-btn'),
-        volatilityChoiceLowVol: document.getElementById('volatility-choice-low-vol'),
-        volatilityChoiceHighVol: document.getElementById('volatility-choice-high-vol')
+        debugCatchBtn: document.getElementById('debug-catch-btn')
     };
     
     // Store default screen sizes for later reference
@@ -223,20 +202,14 @@ function init() {
 
 function createReelGrid() {
     elements.reelContainer.innerHTML = '';
-    
-    // Create initial symbols showing a previous "spin" result
-    // Use a mix of symbols to look like a played game
-    const initialSymbols = [
-        '🪙', '🎰', '🍒', '💎', '🔔',
-        '⭐', '🪙', '7️⃣', '🍒', '🔔',
-        '💎', '⭐', '🎰', '🪙', '🍒',
-        '🔔', '💎', '🪙', '7️⃣', '⭐'
-    ];
-    
-    for (let i = 0; i < 20; i++) {
+    // Get array of all symbol keys
+    const symbolKeys = Object.keys(SYMBOLS);
+    for (let i = 0; i < 15; i++) { // Changed from 20 to 15 for 5x3 grid
         const cell = document.createElement('div');
         cell.className = 'reel-cell';
-        cell.innerHTML = `<span class="symbol">${initialSymbols[i]}</span>`;
+        // Pick random symbol instead of ?
+        const randomSymbol = SYMBOLS[symbolKeys[Math.floor(Math.random() * symbolKeys.length)]];
+        cell.innerHTML = `<span class="symbol">${randomSymbol.emoji}</span>`;
         elements.reelContainer.appendChild(cell);
     }
 }
@@ -259,10 +232,41 @@ function setupEventListeners() {
     elements.lootTakeBtn.addEventListener('click', handleLootTake);
     elements.lootLeaveBtn.addEventListener('click', handleLootLeave);
     elements.caughtContinueBtn.addEventListener('click', handleCaughtContinue);
+    elements.resetBalanceBtn.addEventListener('click', resetBalance);
     elements.debugBonusBtn.addEventListener('click', debugTriggerBonus);
     elements.debugCatchBtn.addEventListener('click', toggleDebugCatch);
-    elements.chooseLowVolBtn.addEventListener('click', () => handleVolatilityChoice('low'));
-    elements.chooseHighVolBtn.addEventListener('click', () => handleVolatilityChoice('high'));
+}
+
+// ====== RESET BALANCE ======
+function resetBalance() {
+    alert('Resetting balance from £' + gameState.bankedTotal.toFixed(2) + ' to £1000');
+    
+    // Clear localStorage completely and reset to defaults
+    localStorage.removeItem('slotCrashGame');
+    gameState.bankedTotal = 1000.00;
+    gameState.bestRun = 0.00;
+    gameState.betAmount = 1.00;
+    
+    // Save fresh state
+    saveGameData();
+    updateUI();
+    
+    // Update bet selector
+    elements.betOptions.forEach(btn => {
+        const btnBet = parseFloat(btn.dataset.bet);
+        if (btnBet === 1.00) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    showMessage('Balance reset to £1000!', '#00ff00');
+    
+    // Force page reload to ensure clean state
+    setTimeout(() => {
+        location.reload();
+    }, 500);
 }
 
 // ====== DEBUG: FORCE TRIGGER BONUS ======
@@ -272,23 +276,18 @@ function debugTriggerBonus() {
         return;
     }
     
-    console.log('🐛 DEBUG: Force triggering bonus');
+    console.log('🐛 DEBUG: Force triggering crash game');
     
-    // Add points to both meters for testing
-    gameState.lowVolMeter = Math.min(gameState.lowVolMeter + 10, 40);
-    gameState.highVolMeter = Math.min(gameState.highVolMeter + 10, 40);
-    updateMeterUI();
-    
-    // Create fake debug params using high vol mode
-    const debugParams = calculateMazeParams('high');
+    // Create debug crash params
+    const debugParams = calculateMazeParams();
     
     gameState.pendingParams = debugParams;
-    displaySymbolAnalysis({ mazeParams: debugParams, lineWins: [], gameMode: 'high' });
+    displaySymbolAnalysis({ mazeParams: debugParams, lineWins: [] });
     
     gameState.isWaitingToStart = true;
     elements.startRunBtn.disabled = false;
     
-    showMessage('🐛 DEBUG: HIGH VOL Ready! START or ABORT?', '#ff00ff');
+    showMessage('🐛 DEBUG: Crash Ready! START or ABORT?', '#ff00ff');
     playSound('bonus');
 }
 
@@ -358,28 +357,20 @@ async function handleSpin() {
         await highlightWinningLines(result.lineWins);
     }
     
-    // If bonus triggered, show analysis and enable decision
+    // If crash symbol landed, trigger crash game directly
     if (result.bonusTriggered) {
-        console.log('🎰 BONUS TRIGGERED!', result);
+        console.log('🎰 CRASH SYMBOL LANDED!', result);
         
-        // Check if player needs to choose volatility
-        if (result.gameMode === 'choice') {
-            // Show volatility choice overlay
-            showVolatilityChoice();
-        } else {
-            // Auto-launch with determined game mode
-            gameState.pendingParams = result.mazeParams;
-            displaySymbolAnalysis(result);
-            
-            // Enable decision buttons
-            gameState.isWaitingToStart = true;
-            gameState.isSpinning = false;
-            elements.startRunBtn.disabled = false;
-            
-            const modeText = result.gameMode === 'low' ? '🟢 LOW VOL' : '🔴 HIGH VOL';
-            showMessage(`💥 CRASH TRIGGERED! ${modeText} - Click START ESCAPE to begin!`, '#ffaa00');
-            playSound('bonus');
-        }
+        gameState.pendingParams = result.mazeParams;
+        displaySymbolAnalysis(result);
+        
+        // Enable start button
+        gameState.isWaitingToStart = true;
+        gameState.isSpinning = false;
+        elements.startRunBtn.disabled = false;
+        
+        showMessage('💥 CRASH TRIGGERED! Click START ESCAPE to begin!', '#ffaa00');
+        playSound('bonus');
     } else {
         // No bonus, just show line wins and continue
         gameState.isSpinning = false;
@@ -395,39 +386,6 @@ async function handleSpin() {
         updateUI();
         saveGameData();
     }
-}
-
-function showVolatilityChoice() {
-    // Show overlay for player to choose between low/high volatility
-    gameState.isSpinning = false;
-    elements.spinBtn.disabled = true;
-    
-    if (elements.volatilityChoice) {
-        elements.volatilityChoice.classList.remove('hidden');
-        elements.volatilityChoiceLowVol.textContent = gameState.lowVolMeter;
-        elements.volatilityChoiceHighVol.textContent = gameState.highVolMeter;
-    }
-}
-
-function handleVolatilityChoice(gameMode) {
-    // Player chose low or high volatility
-    if (elements.volatilityChoice) {
-        elements.volatilityChoice.classList.add('hidden');
-    }
-    
-    // Calculate maze params for chosen mode
-    const mazeParams = calculateMazeParams(gameMode);
-    gameState.pendingParams = mazeParams;
-    
-    // Show analysis and enable start/fold
-    displaySymbolAnalysis({ mazeParams, lineWins: [], gameMode });
-    
-    gameState.isWaitingToStart = true;
-    elements.startRunBtn.disabled = false;
-    
-    const modeText = gameMode === 'low' ? 'LOW VOL' : 'HIGH VOL';
-    showMessage(`${modeText} Maze Ready! START or ABORT?`, '#ffaa00');
-    playSound('bonus');
 }
 
 function handleStartRun() {
@@ -572,6 +530,7 @@ function handleSideExitTake() {
     // Mark that player cashed out (but keep game running to show crash)
     gameState.hasCashedOut = true;
     gameState.cashedOutAt = gameState.currentMultiplier;
+    gameState.cashedOutAmount = payout; // SAVE the amount for later display
     
     elements.sideExitOverlay.classList.add('hidden');
     
@@ -678,14 +637,15 @@ function spinReels() {
         });
 
         // Pre-generate all 20 symbols
+        // Generate random symbols for 5x3 grid (15 cells)
         const allSymbols = [];
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 15; i++) {
             allSymbols.push(weightedSymbols[Math.floor(Math.random() * weightedSymbols.length)]);
         }
         gameState.symbols = allSymbols;
 
         // Reveal reels left-to-right (reel by reel like a real slot)
-        // Grid is [row][col], 5 columns (reels) × 4 rows
+        // Grid is [row][col], 5 columns (reels) × 3 rows
         let currentReel = 0;
         const reelInterval = setInterval(() => {
             if (currentReel >= 5) {
@@ -694,24 +654,14 @@ function spinReels() {
                 return;
             }
 
-            // Reveal all 4 symbols in this reel (column) simultaneously
-            for (let row = 0; row < 4; row++) {
+            // Reveal all 3 symbols in this reel (column) simultaneously
+            for (let row = 0; row < 3; row++) {
                 const cellIndex = row * 5 + currentReel;
                 const cell = cells[cellIndex];
                 const symbol = allSymbols[cellIndex];
 
                 cell.classList.remove('spinning');
-                
-                // Display point symbols with value overlay
-                if (symbol.pointValue) {
-                    cell.innerHTML = `
-                        <span class="symbol">${symbol.emoji}</span>
-                        <span class="point-value">${symbol.pointValue}</span>
-                    `;
-                } else {
-                    cell.innerHTML = `<span class="symbol">${symbol.emoji}</span>`;
-                }
-                
+                cell.innerHTML = `<span class="symbol">${symbol.emoji}</span>`;
                 cell.setAttribute('data-type', symbol.name);
             }
 
@@ -751,9 +701,9 @@ async function highlightWinningLines(lineWins) {
 
 // ====== EVALUATE SPIN ======
 function evaluateSpin() {
-    // Convert symbols array to 2D grid [row][col]
+    // Convert symbols array to 2D grid [row][col] for 5x3 grid
     const grid = [];
-    for (let row = 0; row < 4; row++) {
+    for (let row = 0; row < 3; row++) {
         grid[row] = [];
         for (let col = 0; col < 5; col++) {
             grid[row][col] = gameState.symbols[row * 5 + col];
@@ -770,65 +720,22 @@ function evaluateSpin() {
     });
 
     // Count point symbols and check for crash symbol
-    let lowVolPoints = 0;
-    let highVolPoints = 0;
+    // Check for crash symbol
     let hasCrashSymbol = false;
-    
     gameState.symbols.forEach(symbol => {
-        if (symbol.pointValue && symbol.meterType === 'low') {
-            lowVolPoints += symbol.pointValue;
-        } else if (symbol.pointValue && symbol.meterType === 'high') {
-            highVolPoints += symbol.pointValue;
-        } else if (symbol.isCrash) {
+        if (symbol.isCrash) {
             hasCrashSymbol = true;
         }
     });
     
-    // Update meters (cap at 40)
-    const METER_MAX = 40;
-    gameState.lowVolMeter = Math.min(gameState.lowVolMeter + lowVolPoints, METER_MAX);
-    gameState.highVolMeter = Math.min(gameState.highVolMeter + highVolPoints, METER_MAX);
-    
-    console.log(`Meter Update: Low +${lowVolPoints} = ${gameState.lowVolMeter}, High +${highVolPoints} = ${gameState.highVolMeter}`);
-    updateMeterUI();  // Update visual meters
-    
-    // Check if either meter hit max (auto-trigger)
+    // If crash symbol landed, trigger crash game
     let bonusTriggered = false;
-    let gameMode = null;
     let mazeParams = null;
     
-    if (gameState.lowVolMeter >= METER_MAX) {
+    if (hasCrashSymbol) {
         bonusTriggered = true;
-        gameMode = 'low';
-        console.log('Low Vol meter maxed out - auto-triggering!');
-    } else if (gameState.highVolMeter >= METER_MAX) {
-        bonusTriggered = true;
-        gameMode = 'high';
-        console.log('High Vol meter maxed out - auto-triggering!');
-    } else if (hasCrashSymbol) {
-        // Crash symbol landed - determine which game to launch
-        bonusTriggered = true;
-        
-        if (gameState.lowVolMeter > gameState.highVolMeter) {
-            gameMode = 'low';
-            console.log(`Crash symbol! Launching Low Vol (${gameState.lowVolMeter} > ${gameState.highVolMeter})`);
-        } else if (gameState.highVolMeter > gameState.lowVolMeter) {
-            gameMode = 'high';
-            console.log(`Crash symbol! Launching High Vol (${gameState.highVolMeter} > ${gameState.lowVolMeter})`);
-        } else if (gameState.lowVolMeter === gameState.highVolMeter && gameState.lowVolMeter > 0) {
-            // Meters are equal - player chooses
-            console.log(`Crash symbol! Meters equal (${gameState.lowVolMeter}) - player chooses`);
-            gameMode = 'choice';
-        } else {
-            // Both meters at 0 - no game
-            bonusTriggered = false;
-            console.log('Crash symbol but both meters at 0 - no game');
-        }
-    }
-    
-    // If bonus triggered, calculate maze parameters based on mode
-    if (bonusTriggered && gameMode && gameMode !== 'choice') {
-        mazeParams = calculateMazeParams(gameMode);
+        mazeParams = calculateMazeParams(); // Single mode, no volatility choice
+        console.log('Crash symbol landed - triggering crash game!');
     }
 
     // Pay out line wins immediately
@@ -842,9 +749,6 @@ function evaluateSpin() {
         lineWins,
         totalLinePayout: totalLinePayout.toFixed(2),
         bonusTriggered,
-        gameMode,
-        lowVolPoints,
-        highVolPoints,
         hasCrashSymbol
     });
 
@@ -852,8 +756,7 @@ function evaluateSpin() {
         lineWins,
         totalLinePayout,
         bonusTriggered,
-        mazeParams,
-        gameMode  // 'low', 'high', or 'choice'
+        mazeParams
     };
 }
 
@@ -905,37 +808,17 @@ function calculateLineWins(grid) {
 }
 
 // Calculate maze parameters from special symbols on grid
-function calculateMazeParams(gameMode) {
-    // gameMode is 'low' or 'high'
-    const isLowVol = gameMode === 'low';
-    const meterPoints = isLowVol ? gameState.lowVolMeter : gameState.highVolMeter;
+function calculateMazeParams() {
+    // Single volatility mode - medium difficulty
     
     // Determine starting maze level (keep existing progression)
     const mazeLevel = gameState.currentMazeLevel > 0 ? gameState.currentMazeLevel : 1;
     
-    // Calculate starting pot based on volatility and meter points
-    let basePotMultiplier, monsterSpeedMod, lootMultiplierMin, lootMultiplierMax;
+    // Starting pot = 1x bet amount (proper crash game stakes)
+    const startPot = gameState.betAmount;
     
-    if (isLowVol) {
-        // LOW VOLATILITY: Safer, smaller prizes
-        basePotMultiplier = 1.0;  // Start at 1x bet (proper crash game stakes)
-        monsterSpeedMod = 0.5;  // Monster 50% slower
-        lootMultiplierMin = 0.3;
-        lootMultiplierMax = 1.0;
-    } else {
-        // HIGH VOLATILITY: Riskier, bigger prizes
-        basePotMultiplier = 1.0;  // Start at 1x bet (proper crash game stakes)
-        monsterSpeedMod = 1.2;  // Monster 20% faster
-        lootMultiplierMin = 2.0;
-        lootMultiplierMax = 8.0;
-    }
-    
-    // Starting pot = bet amount × (1 + meter bonus)
-    // More points in meter = small starting bonus (max +100% at 40 points)
-    const meterBonus = meterPoints / 40; // 0 to 1.0
-    const startPot = basePotMultiplier * gameState.betAmount * (1 + meterBonus);
-    
-    const lootDensity = lootMultiplierMin + Math.random() * (lootMultiplierMax - lootMultiplierMin);
+    const lootDensity = 0.8 + Math.random() * 2.0; // Random between 0.8-2.8
+    const monsterSpeedMod = 0.85; // Balanced monster speed
     
     gameState.currentMazeLevel = mazeLevel;
     gameState.mazePot = startPot;
@@ -943,17 +826,15 @@ function calculateMazeParams(gameMode) {
     // CRASH-STYLE EXPONENTIAL DISTRIBUTION
     // Most runs crash early, rare runs go very far (like traditional crash games)
     // Using exponential distribution: -log(random) gives us the crash curve
-    // House edge affects the decay rate
     const houseEdge = 0.03; // 3% house edge for 97% RTP
-    const volatilityMultiplier = isLowVol ? 1.1 : 1.5; // Low vol avg ~27m, High vol avg ~37m
+    const baseMultiplier = 30; // Average crash distance around 30m
     
     // Generate crash point using exponential distribution
-    // Most crashes: 5-20m, Common: 20-50m, Uncommon: 50-100m, Rare: 100-500m, Super rare: 500m+
-    const baseMultiplier = 25 * volatilityMultiplier; // Average crash distance
+    // Most crashes: 5-20m, Common: 20-50m, Uncommon: 50-100m, Rare: 100-500m
     const randomValue = Math.random();
     const crashPoint = Math.max(5, -Math.log(randomValue) * baseMultiplier * (1 - houseEdge));
 
-    console.log(`Maze Params: ${gameMode.toUpperCase()} VOL, Meter: ${meterPoints}, Starting Pot: £${startPot.toFixed(2)} (${(startPot/gameState.betAmount).toFixed(2)}x bet), Monster Speed Mod: ${monsterSpeedMod}x, Crash Point: ${crashPoint.toFixed(2)}m`);
+    console.log(`Crash Game: Starting Pot: £${startPot.toFixed(2)}, Monster Speed: ${monsterSpeedMod}x, Crash Point: ${crashPoint.toFixed(2)}m`);
 
     return {
         mazeLevel,
@@ -962,9 +843,7 @@ function calculateMazeParams(gameMode) {
         playerSpeed: 1.00,  // Base player speed
         monsterSpeed: monsterSpeedMod,  // Multiplier for monster speed
         lootDensity,
-        sanctuaryCount: 0,
-        gameMode,
-        meterPoints
+        sanctuaryCount: 0
     };
 }
 
@@ -992,48 +871,7 @@ function displaySymbolAnalysis(result) {
         });
     }
 
-    // Display maze parameters
-    if (mazeParams) {
-        const tuning = MAZE_TUNING[mazeParams.mazeLevel];
-        
-        elements.multiplierPotential.textContent = `Maze ${mazeParams.mazeLevel} - £${mazeParams.startPot.toFixed(2)}`;
-        
-        let riskText, riskClass;
-        const crashProb = tuning.crashProb;
-        if (crashProb < 0.3) {
-            riskText = '🟢 SAFE';
-            riskClass = 'low';
-        } else if (crashProb < 0.6) {
-            riskText = '🟡 DANGEROUS';
-            riskClass = 'medium';
-        } else {
-            riskText = '🔴 DEADLY';
-            riskClass = 'high';
-        }
-        
-        elements.riskIndicator.textContent = riskText;
-        elements.riskIndicator.className = `value ${riskClass}`;
-
-        // Show modifier summary
-        const modDiv = document.createElement('div');
-        modDiv.className = 'symbol-count';
-        modDiv.innerHTML = `
-            <span class="name">Player Speed:</span>
-            <span class="count">${(mazeParams.playerSpeed * 100).toFixed(0)}%</span>
-        `;
-        elements.symbolBreakdown.appendChild(modDiv);
-
-        if (mazeParams.sanctuaryCount > 0) {
-            const sanctDiv = document.createElement('div');
-            sanctDiv.className = 'symbol-count';
-            sanctDiv.innerHTML = `
-                <span class="emoji">🔦</span>
-                <span class="name">Sanctuaries:</span>
-                <span class="count">${mazeParams.sanctuaryCount}</span>
-            `;
-            elements.symbolBreakdown.appendChild(sanctDiv);
-        }
-    }
+    // Maze parameters removed for cleaner UI
     
     // Play analysis sound
     playSound('analyze');
@@ -1056,6 +894,7 @@ function startLinearRun(params) {
     // Reset cashout tracking
     gameState.hasCashedOut = false;
     gameState.cashedOutAt = 0;
+    gameState.cashedOutAmount = 0;
     
     // Hide cashout banner
     elements.cashoutWatchingBanner.classList.add('hidden');
@@ -1082,14 +921,12 @@ function startLinearRun(params) {
     const startValue = 0.00; // Start at 0 meters
     const endValue = params.crashPoint + 10; // Go a bit beyond crash point for animation
     
-    // Dynamic duration based on crash point and volatility
-    // Low vol: Slower, more strategic (2.0 m/s)
-    // High vol: Faster, more intense (4.0 m/s)
-    const isLowVol = params.gameMode === 'low';
-    const metersPerSecond = isLowVol ? 2.0 : 4.0;
+    // Dynamic duration based on crash point
+    // Medium speed: 3.0 m/s
+    const metersPerSecond = 3.0;
     const duration = (endValue / metersPerSecond) * 1000; // Convert to milliseconds
     
-    console.log(`Run duration: ${(duration/1000).toFixed(1)}s for ${params.crashPoint.toFixed(2)}m crash point (${params.gameMode.toUpperCase()} VOL: ${metersPerSecond}m/s)`);
+    console.log(`Run duration: ${(duration/1000).toFixed(1)}s for ${params.crashPoint.toFixed(2)}m crash point (${metersPerSecond}m/s)`);
     
     // Initialize exit checkpoints and prizes - doors randomly spaced (5-10m apart)
     gameState.exitCheckpoints = [];
@@ -1316,12 +1153,8 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     const width = rect.width;
     const height = rect.height;
 
-    // Check volatility mode
-    const isLowVol = gameState.pendingParams && gameState.pendingParams.gameMode === 'low';
-
-    // Different background colors for volatility modes
-    const bgColor = isLowVol ? '#0a0f0a' : '#0f0a0a'; // Green tint for low vol, Red tint for high vol
-    ctx.fillStyle = bgColor;
+    // Dark horror theme background
+    ctx.fillStyle = '#0a0a0f'; // Dark blue-gray
     ctx.fillRect(0, 0, width, height);
     
     // Add perspective lines (corridor walls)
@@ -1361,21 +1194,13 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     const runnerY = distToY(currentMultiplier);
 
     // Draw the full path from 0 to current position
-    // Different colors for volatility modes
+    // Cyan/Blue gradient for path
     const gradient = ctx.createLinearGradient(0, height, 0, 0);
-    
-    if (isLowVol) {
-        // Low vol: Green/Calm gradient
-        gradient.addColorStop(0, '#00ff00');
-        gradient.addColorStop(1, '#00ffaa');
-    } else {
-        // High vol: Red/Intense gradient
-        gradient.addColorStop(0, '#ff3333');
-        gradient.addColorStop(1, '#ff6666');
-    }
+    gradient.addColorStop(0, '#00aaff');
+    gradient.addColorStop(1, '#00ffff');
 
     ctx.strokeStyle = gradient;
-    ctx.lineWidth = isLowVol ? 4 : 6; // Thicker line for high vol
+    ctx.lineWidth = 5;
     ctx.lineCap = 'round';
 
     // Draw the full line from 0 to current position
@@ -1509,9 +1334,8 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
         }
     }
 
-    // Draw survivor sprite at current position
-    // Enhanced glow based on volatility mode
-    const runnerColor = isLowVol ? '#00ff00' : '#ff3333'; // Green for low vol, Red for high vol
+    // Draw survivor sprite at current position with cyan glow
+    const runnerColor = '#00ffff';
     
     // Draw glow circle behind runner
     ctx.fillStyle = runnerColor;
@@ -1525,15 +1349,6 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     // Draw runner emoji
     ctx.font = 'bold 24px Arial';
     ctx.fillText('🏃', runnerX - 12, runnerY + 8);
-    
-    // Draw mode label near runner
-    ctx.font = 'bold 14px Arial';
-    ctx.fillStyle = runnerColor;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = runnerColor;
-    const modeText = isLowVol ? '🟢 LOW VOL' : '🔴 HIGH VOL';
-    ctx.fillText(modeText, runnerX + 20, runnerY - 10);
-    ctx.shadowBlur = 0;
 
     // ====== SUBTLE HORROR - Random Light System ======
     // Keep lighting constant - no frequency changes based on distance!
@@ -1588,16 +1403,6 @@ function crash() {
     // Hide cashout banner if showing
     elements.cashoutWatchingBanner.classList.add('hidden');
     
-    // Reset consumed meter based on which game mode was played
-    if (gameState.pendingParams && gameState.pendingParams.gameMode) {
-        if (gameState.pendingParams.gameMode === 'low') {
-            gameState.lowVolMeter = 0;
-        } else if (gameState.pendingParams.gameMode === 'high') {
-            gameState.highVolMeter = 0;
-        }
-        updateMeterUI();
-    }
-    
     // DON'T shrink screen yet - keep crash game visible while showing caught overlay
     // Screen will shrink when player clicks "Try Again"
     
@@ -1615,32 +1420,31 @@ function crash() {
     let crashMessage, overlayTitle, overlayResult;
     if (gameState.hasCashedOut) {
         const difference = gameState.currentMultiplier - gameState.cashedOutAt;
+        const cashoutAmount = gameState.cashedOutAmount; // Use saved amount!
         
-        // Calculate what they actually won (already banked)
-        const actualWinnings = gameState.totalCollected; // This was already collected and banked
-        
-        // Calculate prizes between cashout point and crash point (what they missed)
-        let missedPrizes = 0;
+        // Calculate what they COULD have won if they didn't cash out
+        let potentialWinnings = 0;
         if (gameState.allPrizes) {
-            gameState.allPrizes.forEach(prize => {
+            for (const prize of gameState.allPrizes) {
+                // Count prizes between cashout point and crash point
                 if (prize.distance > gameState.cashedOutAt && prize.distance <= gameState.currentMultiplier) {
-                    missedPrizes += prize.value;
+                    potentialWinnings += prize.value;
                 }
-            });
+            }
         }
-        const potentialWinnings = actualWinnings + missedPrizes;
+        const totalPotential = cashoutAmount + potentialWinnings;
         
         overlayTitle = '🎯 CRASH POINT REVEALED!';
         
         if (difference < 5) {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Close call! 😅`;
-            overlayResult = `✅ You won £${actualWinnings.toFixed(2)} - Crashed just ${difference.toFixed(1)}m later! Would've been £${potentialWinnings.toFixed(2)}`;
+            overlayResult = `✅ You won £${cashoutAmount.toFixed(2)} - Could have won £${totalPotential.toFixed(2)} (only £${potentialWinnings.toFixed(2)} more!)`;
         } else if (difference < 15) {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Good timing! 👍`;
-            overlayResult = `✅ You won £${actualWinnings.toFixed(2)} - Solid cashout! Missed £${missedPrizes.toFixed(2)} in extra prizes`;
+            overlayResult = `✅ You won £${cashoutAmount.toFixed(2)} - Could have won £${totalPotential.toFixed(2)} (£${potentialWinnings.toFixed(2)} more)`;
         } else {
             crashMessage = `CRASHED at ${gameState.currentMultiplier.toFixed(2)}m! You cashed out at ${gameState.cashedOutAt.toFixed(2)}m - Too early! 😬`;
-            overlayResult = `✅ You won £${actualWinnings.toFixed(2)} - Could've won £${potentialWinnings.toFixed(2)} (+£${missedPrizes.toFixed(2)})!`;
+            overlayResult = `✅ You won £${cashoutAmount.toFixed(2)} - Could have won £${totalPotential.toFixed(2)} (missed £${potentialWinnings.toFixed(2)}!)`;
         }
     } else {
         overlayTitle = '👹 CAUGHT BY MONSTER!';
@@ -1810,23 +1614,6 @@ function updateUI() {
     elements.bankedTotal.textContent = gameState.bankedTotal.toFixed(2);
     elements.bestRun.textContent = gameState.bestRun.toFixed(2) + 'm';
     elements.betAmount.textContent = gameState.betAmount.toFixed(2);
-}
-
-function updateMeterUI() {
-    // Update meter values and fill bars
-    const METER_MAX = 40;
-    
-    if (elements.lowVolMeterFill) {
-        const lowPercent = (gameState.lowVolMeter / METER_MAX) * 100;
-        elements.lowVolMeterFill.style.height = lowPercent + '%';
-        elements.lowVolMeterValue.textContent = gameState.lowVolMeter;
-    }
-    
-    if (elements.highVolMeterFill) {
-        const highPercent = (gameState.highVolMeter / METER_MAX) * 100;
-        elements.highVolMeterFill.style.height = highPercent + '%';
-        elements.highVolMeterValue.textContent = gameState.highVolMeter;
-    }
 }
 
 function showMessage(text, color) {

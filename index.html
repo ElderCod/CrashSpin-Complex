@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horror Escape - Survivor Chase</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Horror Escape v2.1</title>
+    <link rel="stylesheet" href="styles.css?t=1733097600">
 </head>
 <body>
     <div id="game">
@@ -20,12 +23,13 @@
             </div>
             
             <div id="crash-header">
-                <h2>🏃 Escape Run</h2>
+                <h2>🏃 Escape Run <span style="font-size:10px;color:#666;">[v2.1-DEC1]</span></h2>
                 <div id="stats">
-                    <span>💰 Cash: £<span id="banked-total">10.00</span></span>
-                    <span>🏆 Best Escape: <span id="best-run">0.00</span>m</span>
-                    <button id="debug-bonus-btn" class="btn-debug" title="Force Trigger Bonus (Debug)">🐛 DEBUG</button>
-                    <button id="debug-catch-btn" class="btn-debug" title="Toggle Force Caught Mode">👹 CATCH: OFF</button>
+                <span>💰 Cash: £<span id="banked-total">10.00</span></span>
+                <span>🏆 Best Escape: <span id="best-run">0.00</span>m</span>
+                <button id="reset-balance-btn" class="btn-debug" title="Reset Balance to £1000">💵 RESET</button>
+                <button id="debug-bonus-btn" class="btn-debug" title="Force Trigger Bonus (Debug)">🐛 DEBUG</button>
+                <button id="debug-catch-btn" class="btn-debug" title="Toggle Force Caught Mode">👹 CATCH: OFF</button>
                 </div>
             </div>
             <div id="crash-display">
@@ -152,48 +156,7 @@
 
             <div id="reel-area">
                 <div id="reel-container">
-                    <!-- 5x4 grid will be generated here -->
-                </div>
-                
-                <!-- Meter UI -->
-                <div id="meter-container">
-                    <div id="low-vol-meter" class="meter-bar">
-                        <div class="meter-label">🟢 LOW VOL</div>
-                        <div class="meter-fill-wrapper">
-                            <div id="low-vol-meter-fill" class="meter-fill"></div>
-                        </div>
-                        <div id="low-vol-meter-value" class="meter-value">0</div>
-                    </div>
-                    
-                    <div id="high-vol-meter" class="meter-bar">
-                        <div class="meter-label">🔴 HIGH VOL</div>
-                        <div class="meter-fill-wrapper">
-                            <div id="high-vol-meter-fill" class="meter-fill"></div>
-                        </div>
-                        <div id="high-vol-meter-value" class="meter-value">0</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Volatility Choice Overlay -->
-            <div id="volatility-choice-overlay" class="hidden">
-                <div class="volatility-choice-panel">
-                    <h3>💥 CRASH SYMBOL! CHOOSE YOUR GAME</h3>
-                    <div class="volatility-stats">
-                        <div class="warning">⚖️ Both meters are equal - YOU choose!</div>
-                    </div>
-                    <div class="volatility-buttons">
-                        <button id="choose-low-vol-btn" class="btn-volatility low">
-                            🟢 LOW VOL<br>
-                            <span class="meter-display"><span id="volatility-choice-low-vol">0</span> pts</span><br>
-                            <span class="volatility-desc">Easier · Smaller Prizes</span>
-                        </button>
-                        <button id="choose-high-vol-btn" class="btn-volatility high">
-                            🔴 HIGH VOL<br>
-                            <span class="meter-display"><span id="volatility-choice-high-vol">0</span> pts</span><br>
-                            <span class="volatility-desc">Harder · Bigger Prizes</span>
-                        </button>
-                    </div>
+                    <!-- 5x3 grid will be generated here -->
                 </div>
             </div>
             
@@ -250,6 +213,6 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script src="game.js?t=1733097600"></script>
 </body>
 </html>
