@@ -224,17 +224,17 @@ function setupEventListeners() {
     });
     
     // Symbol legend
-    elements.legendCloseBtn.addEventListener('click', toggleSymbolLegend);
-    elements.cashoutChoiceBtn.addEventListener('click', handleExitCashout);
-    elements.continueChoiceBtn.addEventListener('click', handleExitContinue);
-    elements.sideExitTakeBtn.addEventListener('click', handleSideExitTake);
-    elements.sideExitContinueBtn.addEventListener('click', handleSideExitContinue);
-    elements.lootTakeBtn.addEventListener('click', handleLootTake);
-    elements.lootLeaveBtn.addEventListener('click', handleLootLeave);
-    elements.caughtContinueBtn.addEventListener('click', handleCaughtContinue);
-    elements.resetBalanceBtn.addEventListener('click', resetBalance);
-    elements.debugBonusBtn.addEventListener('click', debugTriggerBonus);
-    elements.debugCatchBtn.addEventListener('click', toggleDebugCatch);
+    if (elements.legendCloseBtn) elements.legendCloseBtn.addEventListener('click', toggleSymbolLegend);
+    if (elements.cashoutChoiceBtn) elements.cashoutChoiceBtn.addEventListener('click', handleExitCashout);
+    if (elements.continueChoiceBtn) elements.continueChoiceBtn.addEventListener('click', handleExitContinue);
+    if (elements.sideExitTakeBtn) elements.sideExitTakeBtn.addEventListener('click', handleSideExitTake);
+    if (elements.sideExitContinueBtn) elements.sideExitContinueBtn.addEventListener('click', handleSideExitContinue);
+    if (elements.lootTakeBtn) elements.lootTakeBtn.addEventListener('click', handleLootTake);
+    if (elements.lootLeaveBtn) elements.lootLeaveBtn.addEventListener('click', handleLootLeave);
+    if (elements.caughtContinueBtn) elements.caughtContinueBtn.addEventListener('click', handleCaughtContinue);
+    if (elements.resetBalanceBtn) elements.resetBalanceBtn.addEventListener('click', resetBalance);
+    if (elements.debugBonusBtn) elements.debugBonusBtn.addEventListener('click', debugTriggerBonus);
+    if (elements.debugCatchBtn) elements.debugCatchBtn.addEventListener('click', toggleDebugCatch);
 }
 
 // ====== RESET BALANCE ======
