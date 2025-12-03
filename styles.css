@@ -1788,7 +1788,6 @@ body.crash-active #meter-container {
         flex: 1 1 auto !important;
         min-height: 0 !important;
         padding: 4px !important;
-        padding-bottom: 50px !important;
     }
 
     /* Hide debug buttons on mobile */
@@ -1862,12 +1861,7 @@ body.crash-active #meter-container {
     }
 
     #controls {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #1a1a1a;
-        padding: 4px;
+        padding: 2px;
         gap: 2px;
         margin: 0;
         flex-direction: row !important;
@@ -1875,8 +1869,6 @@ body.crash-active #meter-container {
         justify-content: space-between;
         align-items: stretch;
         flex-shrink: 0;
-        z-index: 1000;
-        border-top: 1px solid #333;
     }
 
     #bet-selector {
