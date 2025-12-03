@@ -1786,9 +1786,10 @@ body.crash-active #meter-container {
 
     #bottom-screen {
         flex: 0 1 auto !important;
-        max-height: 40vh !important;
+        max-height: 30vh !important;
         min-height: 0 !important;
         padding: 4px !important;
+        padding-bottom: 120px !important;
     }
 
     /* Hide debug buttons on mobile */
@@ -1862,15 +1863,21 @@ body.crash-active #meter-container {
     }
 
     #controls {
-        padding: 2px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1a1a1a;
+        padding: 4px;
         gap: 2px;
-        margin-top: 0;
-        margin-bottom: 2px;
+        margin: 0;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         justify-content: space-between;
         align-items: stretch;
         flex-shrink: 0;
+        z-index: 1000;
+        border-top: 1px solid #333;
     }
 
     #bet-selector {
