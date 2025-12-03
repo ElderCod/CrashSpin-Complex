@@ -1846,14 +1846,14 @@ body.crash-active #meter-container {
     }
 
     .reel-cell {
-        font-size: 10px;
-        min-height: 16px;
-        max-height: 16px;
+        font-size: 12px;
+        min-height: 22px;
+        max-height: 22px;
         border-width: 1px;
     }
 
     .reel-symbol {
-        font-size: 14px;
+        font-size: 18px;
     }
 
     #spin-btn {
