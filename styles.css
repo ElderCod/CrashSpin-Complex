@@ -1785,7 +1785,8 @@ body.crash-active #meter-container {
     }
 
     #bottom-screen {
-        flex: 1 1 auto !important;
+        flex: 0 1 auto !important;
+        max-height: 40vh !important;
         min-height: 0 !important;
         padding: 4px !important;
     }
@@ -1844,13 +1845,14 @@ body.crash-active #meter-container {
     }
 
     .reel-cell {
-        font-size: 12px;
-        min-height: 20px;
+        font-size: 10px;
+        min-height: 16px;
+        max-height: 16px;
         border-width: 1px;
     }
 
     .reel-symbol {
-        font-size: 16px;
+        font-size: 14px;
     }
 
     #spin-btn {
