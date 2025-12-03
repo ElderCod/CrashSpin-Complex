@@ -1779,7 +1779,30 @@ body.crash-active #meter-container {
 @media (max-width: 480px) {
     /* Optimize dual screen for phones */
     #top-screen {
-        flex: 0 0 35vh;
+        flex: 0 0 30vh;
+    }
+
+    /* Hide debug buttons on mobile */
+    .btn-debug {
+        display: none !important;
+    }
+
+    /* Compact crash header */
+    #crash-header {
+        padding: 4px 8px;
+    }
+
+    #crash-header h2 {
+        font-size: 14px;
+    }
+
+    #stats {
+        font-size: 10px;
+        gap: 4px;
+    }
+
+    #stats span {
+        padding: 4px 6px;
     }
 
     #slot-header {
@@ -1797,7 +1820,7 @@ body.crash-active #meter-container {
     }
 
     #reel-area {
-        padding: 0 5px;
+        padding: 0 2px;
     }
 
     #reel-container {
