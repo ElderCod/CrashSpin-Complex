@@ -1779,9 +1779,9 @@ body.crash-active #meter-container {
 @media (max-width: 480px) {
     /* Optimize dual screen for phones */
     #top-screen {
-        flex: 0 0 25vh !important;
-        min-height: 25vh !important;
-        max-height: 25vh !important;
+        flex: 0 0 35vh !important;
+        min-height: 35vh !important;
+        max-height: 35vh !important;
     }
 
     #bottom-screen {
