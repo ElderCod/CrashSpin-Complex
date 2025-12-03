@@ -1859,6 +1859,10 @@ body.crash-active #meter-container {
         min-height: 22px;
         max-height: 22px;
         border-width: 1px;
+        width: 50px;
+        min-width: 50px;
+        max-width: 50px;
+        padding: 0;
     }
 
     .reel-symbol {
