@@ -1785,8 +1785,7 @@ body.crash-active #meter-container {
     }
 
     #bottom-screen {
-        flex: 0 1 auto !important;
-        max-height: 45vh !important;
+        flex: 1 1 auto !important;
         min-height: 0 !important;
         padding: 4px !important;
         padding-bottom: 50px !important;
