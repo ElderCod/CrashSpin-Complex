@@ -1843,14 +1843,15 @@ body.crash-active #meter-container {
     }
 
     #reel-container {
-        gap: 1px;
-        padding: 2px;
+        gap: 2px;
+        padding: 3px;
         height: auto;
-        max-height: 100%;
+        width: 264px;
+        max-width: 264px;
+        min-width: 264px;
         align-self: center;
-        grid-template-columns: repeat(5, auto);
-        grid-template-rows: repeat(3, auto);
-        width: auto;
+        grid-template-columns: repeat(5, 50px);
+        grid-template-rows: repeat(3, 22px);
         flex: 0 0 auto;
     }
 
