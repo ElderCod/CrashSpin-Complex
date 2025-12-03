@@ -1848,6 +1848,10 @@ body.crash-active #meter-container {
         height: auto;
         max-height: 100%;
         align-self: center;
+        grid-template-columns: repeat(5, auto);
+        grid-template-rows: repeat(3, auto);
+        width: auto;
+        flex: 0 0 auto;
     }
 
     .reel-cell {
