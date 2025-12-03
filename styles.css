@@ -1779,19 +1779,14 @@ body.crash-active #meter-container {
 @media (max-width: 480px) {
     /* Optimize dual screen for phones */
     #top-screen {
-        flex: 0 0 30vh !important;
-        min-height: 30vh !important;
-        max-height: 30vh !important;
+        flex: 0 0 35vh !important;
+        min-height: 35vh !important;
+        max-height: 35vh !important;
     }
 
     #bottom-screen {
         flex: 1 1 auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        padding: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: hidden !important;
+        padding: 4px !important;
     }
 
     /* Hide debug buttons on mobile */
@@ -1801,11 +1796,7 @@ body.crash-active #meter-container {
 
     /* Compact crash header */
     #crash-header {
-        padding: 2px 4px;
-        flex: 0 0 auto;
-        height: 20px;
-        min-height: 20px;
-        max-height: 20px;
+        padding: 3px 6px;
     }
 
     #crash-header h2 {
@@ -1826,7 +1817,9 @@ body.crash-active #meter-container {
     }
 
     #slot-header {
-        display: none !important;
+        padding: 2px;
+        font-size: 9px;
+        margin: 0;
     }
 
     #balance, #bet-controls {
@@ -1839,32 +1832,20 @@ body.crash-active #meter-container {
     }
 
     #reel-area {
-        padding: 4px;
-        flex: 1 1 auto !important;
-        min-height: 0 !important;
-        max-height: 100% !important;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden !important;
+        padding: 2px;
+        flex: 1;
     }
 
     #reel-container {
-        gap: 3px;
-        padding: 4px;
-        width: auto;
-        height: auto;
-        max-width: 100%;
-        max-height: 100%;
-        grid-template-columns: repeat(5, minmax(40px, 1fr));
-        grid-template-rows: repeat(3, minmax(30px, 1fr));
-        flex: 0 0 auto;
+        gap: 2px;
+        padding: 3px;
     }
 
     .reel-cell {
-        font-size: 12px;
+        font-size: 11px;
         border-width: 1px;
-        padding: 2px;
+        padding: 1px;
+        min-height: 0;
     }
 
     .reel-symbol {
@@ -1878,17 +1859,10 @@ body.crash-active #meter-container {
     }
 
     #controls {
-        padding: 4px;
-        gap: 4px;
+        padding: 3px;
+        gap: 3px;
         margin: 0;
-        flex: 0 0 auto !important;
-        height: 44px !important;
-        min-height: 44px !important;
-        max-height: 44px !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        justify-content: space-between;
-        align-items: stretch;
+        flex-shrink: 0;
     }
 
     #bet-selector {
@@ -1912,12 +1886,9 @@ body.crash-active #meter-container {
     }
 
     .btn-primary, .btn-danger {
-        padding: 4px 6px;
+        padding: 6px 8px;
         font-size: 11px;
-        min-height: 36px;
-        max-height: 36px;
-        flex: 1;
-        min-width: 0;
+        min-height: 40px;
     }
 
     /* Scale overlay panels for phones */
