@@ -1820,7 +1820,8 @@ body.crash-active #meter-container {
     #slot-header {
         padding: 2px 4px;
         font-size: 10px;
-        margin-bottom: 2px;
+        margin-bottom: 0;
+        flex-shrink: 0;
     }
 
     #balance, #bet-controls {
@@ -1834,8 +1835,9 @@ body.crash-active #meter-container {
 
     #reel-area {
         padding: 0 2px;
-        flex: 1 1 auto;
+        flex: 1 1 0 !important;
         min-height: 0;
+        display: flex !important;
     }
 
     #reel-container {
@@ -1874,7 +1876,7 @@ body.crash-active #meter-container {
     #bet-selector {
         flex-direction: row !important;
         gap: 1px;
-        padding: 1px 2px;
+        padding: 0;
         flex-shrink: 1;
         min-width: 0;
     }
