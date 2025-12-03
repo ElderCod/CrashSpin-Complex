@@ -1775,8 +1775,8 @@ body.crash-active #meter-container {
     }
 }
 
-/* Mobile phones */
-@media (max-width: 480px) {
+/* Mobile phones only - strict viewport */
+@media (max-width: 480px) and (hover: none) and (pointer: coarse) {
     /* Optimize dual screen for phones */
     #top-screen {
         flex: 0 0 30vh;
