@@ -1793,16 +1793,20 @@ body.crash-active #meter-container {
     }
 
     #crash-header h2 {
-        font-size: 14px;
+        font-size: 12px;
+        letter-spacing: 0;
     }
 
     #stats {
-        font-size: 10px;
-        gap: 4px;
+        font-size: 9px;
+        gap: 3px;
+        flex-wrap: nowrap;
     }
 
     #stats span {
-        padding: 4px 6px;
+        padding: 3px 5px;
+        white-space: nowrap;
+        font-size: 9px;
     }
 
     #slot-header {
