@@ -1779,16 +1779,16 @@ body.crash-active #meter-container {
 @media (max-width: 480px) {
     /* Optimize dual screen for phones */
     #top-screen {
-        flex: 0 0 45vh !important;
-        min-height: 45vh !important;
-        max-height: 45vh !important;
+        flex: 0 0 47vh !important;
+        min-height: 47vh !important;
+        max-height: 47vh !important;
     }
 
     #bottom-screen {
-        flex: 0 0 50vh !important;
-        min-height: 50vh !important;
-        max-height: 50vh !important;
-        padding: 0 !important;
+        flex: 0 0 48vh !important;
+        min-height: 48vh !important;
+        max-height: 48vh !important;
+        padding: 2px !important;
         display: flex !important;
         flex-direction: column !important;
     }
@@ -1821,10 +1821,7 @@ body.crash-active #meter-container {
     }
 
     #slot-header {
-        padding: 2px 4px;
-        font-size: 10px;
-        margin-bottom: 0;
-        flex-shrink: 0;
+        display: none !important;
     }
 
     #balance, #bet-controls {
@@ -1838,9 +1835,8 @@ body.crash-active #meter-container {
 
     #reel-area {
         padding: 2px;
-        flex: 0 0 45vh !important;
-        min-height: 45vh !important;
-        max-height: 45vh !important;
+        flex: 1 !important;
+        min-height: 0 !important;
         display: flex !important;
         align-items: stretch;
         justify-content: stretch;
