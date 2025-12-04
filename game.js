@@ -1271,10 +1271,9 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     
     // Draw prizes along the path (only those visible in current scale)
     if (gameState.allPrizes) {
-        // Mobile detection
-        const isMobilePrize = width < 480;
-        const prizeSize = isMobilePrize ? 18 : 28;
-        const prizeOffset = isMobilePrize ? 9 : 14;
+        // Use isMobile from top of function
+        const prizeSize = isMobile ? 18 : 28;
+        const prizeOffset = isMobile ? 9 : 14;
         
         for (let i = 0; i < gameState.allPrizes.length; i++) {
             const prize = gameState.allPrizes[i];
@@ -1292,15 +1291,15 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
                 if (prize.type === 'gold') {
                     emoji = '🥇';
                     color = '#FFD700';
-                    glow = isMobilePrize ? 10 : 20;
+                    glow = isMobile ? 10 : 20;
                 } else if (prize.type === 'silver') {
                     emoji = '🥈';
                     color = '#C0C0C0';
-                    glow = isMobilePrize ? 8 : 15;
+                    glow = isMobile ? 8 : 15;
                 } else {
                     emoji = '🥉';
                     color = '#CD7F32';
-                    glow = isMobilePrize ? 5 : 10;
+                    glow = isMobile ? 5 : 10;
                 }
                 
                 ctx.shadowBlur = glow;
@@ -1359,8 +1358,7 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     ctx.fill();
     ctx.shadowBlur = 0;
     
-    // Mobile detection for runner size
-    const isMobile = width < 480;
+    // Use isMobile from top of function for runner size
     const runnerSize = isMobile ? 24 : 32;
     const runnerOffset = isMobile ? 12 : 16;
     
