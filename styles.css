@@ -1860,19 +1860,26 @@ body.crash-active #meter-container {
     }
 
     #reel-container {
-        gap: 1px;
-        padding: 2px;
+        gap: 0 !important;
+        padding: 2px !important;
     }
 
     .reel-cell {
-        font-size: 10px;
-        min-height: 16px;
-        max-height: 16px;
+        font-size: 12px;
+        min-height: 24px;
+        max-height: 24px;
         border-width: 1px;
+        border-radius: 4px;
+        margin: 0;
+        padding: 0;
     }
 
     .reel-symbol {
-        font-size: 14px;
+        font-size: 20px;
+    }
+
+    .reel-cell .symbol {
+        font-size: 20px;
     }
 
     #spin-btn {
