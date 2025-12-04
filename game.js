@@ -1173,7 +1173,10 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     // Left = 0m (start), Runner moves left->right showing full journey
     
     // Add buffer for beyond current position to hide fake content
-    const maxDistance = Math.max(currentMultiplier + 20, 50); // Show 20m ahead or min 50m
+    // Wider view on mobile to spread out elements
+    const isMobile = width < 480;
+    const bufferMultiplier = isMobile ? 30 : 20;
+    const maxDistance = Math.max(currentMultiplier + bufferMultiplier, 50); // More spacing on mobile
     
     // Scale: fit entire journey (0 to maxDistance) into canvas width
     const scale = width / maxDistance;
@@ -1268,6 +1271,11 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     
     // Draw prizes along the path (only those visible in current scale)
     if (gameState.allPrizes) {
+        // Mobile detection
+        const isMobilePrize = width < 480;
+        const prizeSize = isMobilePrize ? 18 : 28;
+        const prizeOffset = isMobilePrize ? 9 : 14;
+        
         for (let i = 0; i < gameState.allPrizes.length; i++) {
             const prize = gameState.allPrizes[i];
             
@@ -1284,21 +1292,21 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
                 if (prize.type === 'gold') {
                     emoji = '🥇';
                     color = '#FFD700';
-                    glow = 20;
+                    glow = isMobilePrize ? 10 : 20;
                 } else if (prize.type === 'silver') {
                     emoji = '🥈';
                     color = '#C0C0C0';
-                    glow = 15;
+                    glow = isMobilePrize ? 8 : 15;
                 } else {
                     emoji = '🥉';
                     color = '#CD7F32';
-                    glow = 10;
+                    glow = isMobilePrize ? 5 : 10;
                 }
                 
                 ctx.shadowBlur = glow;
                 ctx.shadowColor = color;
-                ctx.font = 'bold 28px Arial';
-                ctx.fillText(emoji, prizeX - 14, prizeY + floatOffset);
+                ctx.font = `bold ${prizeSize}px Arial`;
+                ctx.fillText(emoji, prizeX - prizeOffset, prizeY + floatOffset);
                 ctx.shadowBlur = 0;
             }
         }
@@ -1321,13 +1329,18 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
                 let color = i === 0 ? '#00aaff' : i === 1 ? '#ffaa00' : '#00ff00';
                 if (checkpoint.triggered) color = '#555';
                 
+                // Mobile detection for sizing
+                const isMobile = width < 480;
+                const doorSize = isMobile ? 24 : 36;
+                const doorOffset = isMobile ? 12 : 18;
+                
                 // Draw glowing marker
                 ctx.shadowBlur = checkpoint.triggered ? 0 : 30;
                 ctx.shadowColor = color;
                 ctx.fillStyle = color;
                 ctx.globalAlpha = pulse;
-                ctx.font = 'bold 36px Arial';
-                ctx.fillText('🚪', checkpointX - 18, checkpointY + 12);
+                ctx.font = `bold ${doorSize}px Arial`;
+                ctx.fillText('🚪', checkpointX - doorOffset, checkpointY + (doorOffset * 0.66));
                 ctx.globalAlpha = 1.0;
                 ctx.shadowBlur = 0;
             }
@@ -1346,9 +1359,14 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     ctx.fill();
     ctx.shadowBlur = 0;
     
+    // Mobile detection for runner size
+    const isMobile = width < 480;
+    const runnerSize = isMobile ? 24 : 32;
+    const runnerOffset = isMobile ? 12 : 16;
+    
     // Draw runner emoji
-    ctx.font = 'bold 32px Arial';
-    ctx.fillText('🏃', runnerX - 16, runnerY + 10);
+    ctx.font = `bold ${runnerSize}px Arial`;
+    ctx.fillText('🏃', runnerX - runnerOffset, runnerY + (runnerOffset * 0.625));
 
     // ====== SUBTLE HORROR - Random Light System ======
     // Keep lighting constant - no frequency changes based on distance!
