@@ -55,15 +55,15 @@ const SYMBOLS = {
 // Maze tuning table (12 levels)
 const MAZE_TUNING = [
     null, // index 0 unused
-    { multRange:[1.0,1.5],   monsterSpd:1.00, playerSpd:1.00, lootDensity:1.0, sanctChance:0.30, crashProb:0.05 },  // Maze 1
-    { multRange:[1.5,2.2],   monsterSpd:1.05, playerSpd:1.00, lootDensity:1.1, sanctChance:0.30, crashProb:0.08 },  // Maze 2
-    { multRange:[2.2,3.2],   monsterSpd:1.08, playerSpd:0.98, lootDensity:1.2, sanctChance:0.25, crashProb:0.12 },  // Maze 3
-    { multRange:[3.2,5.0],   monsterSpd:1.12, playerSpd:0.96, lootDensity:1.3, sanctChance:0.20, crashProb:0.18 },  // Maze 4
-    { multRange:[5.0,8.0],   monsterSpd:1.18, playerSpd:0.95, lootDensity:1.4, sanctChance:0.18, crashProb:0.24 },  // Maze 5
-    { multRange:[8.0,12],    monsterSpd:1.25, playerSpd:0.94, lootDensity:1.5, sanctChance:0.15, crashProb:0.30 },  // Maze 6
-    { multRange:[12,20],     monsterSpd:1.33, playerSpd:0.93, lootDensity:1.6, sanctChance:0.12, crashProb:0.38 },  // Maze 7
-    { multRange:[20,35],     monsterSpd:1.42, playerSpd:0.92, lootDensity:1.7, sanctChance:0.10, crashProb:0.48 },  // Maze 8
-    { multRange:[35,60],     monsterSpd:1.50, playerSpd:0.92, lootDensity:1.8, sanctChance:0.08, crashProb:0.58 },  // Maze 9
+    { multRange:[1.0,1.5],   monsterSpd:1.00, playerSpd:1.00, lootDensity:1.0, sanctChance:0.30, crashProb:0.01 },  // Maze 1 - Very safe
+    { multRange:[1.5,2.2],   monsterSpd:1.05, playerSpd:1.00, lootDensity:1.1, sanctChance:0.30, crashProb:0.02 },  // Maze 2 - Very safe
+    { multRange:[2.2,3.2],   monsterSpd:1.08, playerSpd:0.98, lootDensity:1.2, sanctChance:0.25, crashProb:0.04 },  // Maze 3 - Safe
+    { multRange:[3.2,5.0],   monsterSpd:1.12, playerSpd:0.96, lootDensity:1.3, sanctChance:0.20, crashProb:0.07 },  // Maze 4 - Still safe
+    { multRange:[5.0,8.0],   monsterSpd:1.18, playerSpd:0.95, lootDensity:1.4, sanctChance:0.18, crashProb:0.12 },  // Maze 5 - Moderate
+    { multRange:[8.0,12],    monsterSpd:1.25, playerSpd:0.94, lootDensity:1.5, sanctChance:0.15, crashProb:0.18 },  // Maze 6 - Getting risky
+    { multRange:[12,20],     monsterSpd:1.33, playerSpd:0.93, lootDensity:1.6, sanctChance:0.12, crashProb:0.28 },  // Maze 7
+    { multRange:[20,35],     monsterSpd:1.42, playerSpd:0.92, lootDensity:1.7, sanctChance:0.10, crashProb:0.40 },  // Maze 8
+    { multRange:[35,60],     monsterSpd:1.50, playerSpd:0.92, lootDensity:1.8, sanctChance:0.08, crashProb:0.55 },  // Maze 9
     { multRange:[60,120],    monsterSpd:1.55, playerSpd:0.91, lootDensity:1.9, sanctChance:0.06, crashProb:0.70 },  // Maze 10
     { multRange:[120,250],   monsterSpd:1.60, playerSpd:0.90, lootDensity:2.0, sanctChance:0.05, crashProb:0.80 },  // Maze 11
     { multRange:[250,500],   monsterSpd:1.65, playerSpd:0.90, lootDensity:2.1, sanctChance:0.03, crashProb:0.90 }   // Maze 12
@@ -2317,11 +2317,19 @@ function animateMaze() {
     
     // Check for monster catch (crash based on tuning)
     const tuning = MAZE_TUNING[gameState.currentMazeLevel];
-    const crashRoll = Math.random();
-    if (crashRoll < tuning.crashProb * 0.0001) { // Very low per-frame chance
-        crash();
-        mazeState.isRunning = false;
-        return;
+    
+    // Add distance-based protection - can't crash before 3m (gives players a chance to reach first checkpoint)
+    const minSafeDistance = 3.0;
+    const canCrash = gameState.currentMultiplier >= minSafeDistance;
+    
+    if (canCrash) {
+        const crashRoll = Math.random();
+        // Reduced crash probability multiplier for more forgiveness
+        if (crashRoll < tuning.crashProb * 0.00008) { // Reduced from 0.0001 to 0.00008
+            crash();
+            mazeState.isRunning = false;
+            return;
+        }
     }
     
     animationFrameId = requestAnimationFrame(animateMaze);
