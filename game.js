@@ -1297,8 +1297,8 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
                 
                 ctx.shadowBlur = glow;
                 ctx.shadowColor = color;
-                ctx.font = 'bold 20px Arial';
-                ctx.fillText(emoji, prizeX - 10, prizeY + floatOffset);
+                ctx.font = 'bold 28px Arial';
+                ctx.fillText(emoji, prizeX - 14, prizeY + floatOffset);
                 ctx.shadowBlur = 0;
             }
         }
@@ -1326,8 +1326,8 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
                 ctx.shadowColor = color;
                 ctx.fillStyle = color;
                 ctx.globalAlpha = pulse;
-                ctx.font = 'bold 28px Arial';
-                ctx.fillText('🚪', checkpointX - 14, checkpointY + 10);
+                ctx.font = 'bold 36px Arial';
+                ctx.fillText('🚪', checkpointX - 18, checkpointY + 12);
                 ctx.globalAlpha = 1.0;
                 ctx.shadowBlur = 0;
             }
@@ -1347,8 +1347,8 @@ function drawCrashGraph(progress, currentMultiplier, crashPoint) {
     ctx.shadowBlur = 0;
     
     // Draw runner emoji
-    ctx.font = 'bold 24px Arial';
-    ctx.fillText('🏃', runnerX - 12, runnerY + 8);
+    ctx.font = 'bold 32px Arial';
+    ctx.fillText('🏃', runnerX - 16, runnerY + 10);
 
     // ====== SUBTLE HORROR - Random Light System ======
     // Keep lighting constant - no frequency changes based on distance!
