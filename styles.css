@@ -1792,17 +1792,16 @@ body.crash-active #meter-container {
 
     /* Optimize dual screen for phones */
     #top-screen {
-        flex: 0 0 35vh !important;
-        min-height: 35vh !important;
-        max-height: 35vh !important;
+        flex: 35 0 0% !important;
+        min-height: 0 !important;
+        max-height: none !important;
     }
 
     #bottom-screen {
-        flex: 0 1 auto !important;
-        max-height: 25vh !important;
+        flex: 40 1 0% !important;
+        max-height: none !important;
         min-height: 0 !important;
         padding: 4px !important;
-        padding-bottom: 4px !important;
         overflow: hidden;
     }
 
@@ -1883,21 +1882,24 @@ body.crash-active #meter-container {
     }
 
     #controls {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        position: relative !important;
+        flex: 0 0 auto !important;
+        margin-top: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
         background: #1a1a1a;
-        padding: 4px;
-        gap: 2px;
-        margin: 0;
+        padding: 6px;
+        gap: 4px;
+        margin-bottom: 0;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         justify-content: space-between;
         align-items: stretch;
         flex-shrink: 0;
-        z-index: 1000;
+        z-index: 10;
         border-top: 1px solid #333;
+        min-height: 0;
     }
 
     #bet-selector {
