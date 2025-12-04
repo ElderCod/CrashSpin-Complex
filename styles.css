@@ -39,6 +39,11 @@ body::before {
     max-width: 1200px;
     margin: 0 auto;
     overflow: hidden;
+    min-height: 0;
+}
+
+#game > * {
+    min-height: 0;
 }
 
 /* ====== TRANSITION OVERLAY ====== */
@@ -1777,6 +1782,14 @@ body.crash-active #meter-container {
 
 /* Mobile phones - simplified check */
 @media (max-width: 480px) {
+    body {
+        height: 100dvh;
+    }
+
+    #game {
+        height: 100dvh;
+    }
+
     /* Optimize dual screen for phones */
     #top-screen {
         flex: 0 0 35vh !important;
@@ -1785,8 +1798,11 @@ body.crash-active #meter-container {
     }
 
     #bottom-screen {
-        flex: 1 1 auto !important;
+        flex: 0 1 auto !important;
+        max-height: 30vh !important;
+        min-height: 0 !important;
         padding: 4px !important;
+        padding-bottom: 120px !important;
     }
 
     /* Hide debug buttons on mobile */
@@ -1796,12 +1812,18 @@ body.crash-active #meter-container {
 
     /* Compact crash header */
     #crash-header {
-        padding: 3px 6px;
+        padding: 4px 8px;
     }
 
     #crash-header h2 {
         font-size: 12px;
         letter-spacing: 0;
+    }
+
+    #crashCanvas {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100%;
     }
 
     #stats {
@@ -1817,9 +1839,9 @@ body.crash-active #meter-container {
     }
 
     #slot-header {
-        padding: 2px;
-        font-size: 9px;
-        margin: 0;
+        padding: 2px 4px;
+        font-size: 10px;
+        margin-bottom: 2px;
     }
 
     #balance, #bet-controls {
@@ -1832,24 +1854,25 @@ body.crash-active #meter-container {
     }
 
     #reel-area {
-        padding: 2px;
-        flex: 1;
-    }
-
-    #reel-container {
-        gap: 2px;
-        padding: 3px;
-    }
-
-    .reel-cell {
-        font-size: 11px;
-        border-width: 1px;
-        padding: 1px;
+        padding: 0 2px;
+        flex: 1 1 auto;
         min-height: 0;
     }
 
+    #reel-container {
+        gap: 1px;
+        padding: 2px;
+    }
+
+    .reel-cell {
+        font-size: 10px;
+        min-height: 16px;
+        max-height: 16px;
+        border-width: 1px;
+    }
+
     .reel-symbol {
-        font-size: 18px;
+        font-size: 14px;
     }
 
     #spin-btn {
@@ -1859,16 +1882,27 @@ body.crash-active #meter-container {
     }
 
     #controls {
-        padding: 3px;
-        gap: 3px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1a1a1a;
+        padding: 4px;
+        gap: 2px;
         margin: 0;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between;
+        align-items: stretch;
         flex-shrink: 0;
+        z-index: 1000;
+        border-top: 1px solid #333;
     }
 
     #bet-selector {
         flex-direction: row !important;
         gap: 1px;
-        padding: 0;
+        padding: 1px 2px;
         flex-shrink: 1;
         min-width: 0;
     }
@@ -1886,9 +1920,11 @@ body.crash-active #meter-container {
     }
 
     .btn-primary, .btn-danger {
-        padding: 6px 8px;
-        font-size: 11px;
-        min-height: 40px;
+        padding: 4px 6px;
+        font-size: 10px;
+        min-height: 36px;
+        flex: 1;
+        min-width: 0;
     }
 
     /* Scale overlay panels for phones */
