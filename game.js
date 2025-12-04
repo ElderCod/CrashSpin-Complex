@@ -1478,19 +1478,22 @@ function crash() {
     showMessage(crashMessage, '#ff0000');
     playSound('monsterCatch');
 
-    // Red flash effect on canvas
-    const canvas = elements.crashCanvas;
-    const rect = canvas.getBoundingClientRect();
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
-    ctx.fillRect(0, 0, rect.width, rect.height);
-    
-    // Draw monster attack
-    ctx.fillStyle = '#ff0000';
-    ctx.shadowBlur = 40;
-    ctx.shadowColor = '#ff0000';
-    ctx.font = 'bold 80px Arial';
-    ctx.fillText('👹', rect.width / 2 - 40, rect.height / 2 + 20);
-    ctx.shadowBlur = 0;
+    // Only show monster attack visual if player didn't cash out
+    if (!gameState.hasCashedOut) {
+        // Red flash effect on canvas
+        const canvas = elements.crashCanvas;
+        const rect = canvas.getBoundingClientRect();
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
+        ctx.fillRect(0, 0, rect.width, rect.height);
+        
+        // Draw monster attack
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = '#ff0000';
+        ctx.font = 'bold 80px Arial';
+        ctx.fillText('👹', rect.width / 2 - 40, rect.height / 2 + 20);
+        ctx.shadowBlur = 0;
+    }
 
     setTimeout(() => {
         document.body.classList.remove('crashed');
